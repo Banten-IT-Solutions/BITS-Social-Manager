@@ -140,25 +140,17 @@ Fork use same setup, only `pattern` change to target domain.
 
 ```text
 src/
-├── client/      # React frontend
-├── worker/      # Hono API
-├── migrations/  # D1 migrations
-└── tests/       # Unit and e2e tests
+├── client/
+│   ├── components/
+│   ├── lib/
+│   ├── pages/
+│   └── store/
+└── worker/
+    ├── db/
+    ├── middleware/
+    ├── routes/
+    └── utils/
 ```
-
-## CI/CD
-
-GitHub Actions workflow auto deploy on push to `main`.
-
-Pipeline:
-1. Install dependencies
-2. Type-check
-3. Run unit tests
-4. Build client
-5. Sync secrets
-6. Apply D1 migrations
-7. Deploy Worker
-8. Smoke test `/api/health`
 
 ## Customization
 
@@ -176,33 +168,6 @@ wrangler d1 backup create social-manager-db
 wrangler d1 backup list social-manager-db
 ```
 
-## Troubleshooting
+## Credits
 
-### D1 database not found
-
-```bash
-wrangler d1 list
-wrangler d1 create social-manager-db
-npm run db:migrate:local
-```
-
-### ENCRYPTION_KEY error
-
-```bash
-node -e "console.log(crypto.randomBytes(32).toString('hex'))"
-wrangler secret put ENCRYPTION_KEY
-```
-
-### CORS issues
-
-Update origin in `src/worker/index.ts` to match deployment domain.
-
-## Documentation
-
-- `API.md` — API reference
-- `SECURITY.md` — security notes
-- `README.md` — setup and deployment
-
-## Repository
-
-https://github.com/Banten-IT-Solutions/BITS-Social-Manager
+Developed with ❤️ by [Banten IT Solutions](https://bits.co.id)
