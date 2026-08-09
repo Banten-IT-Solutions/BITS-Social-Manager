@@ -70,7 +70,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           preCommands: |
-            d1 migrations apply social-manager-db --remote
+            wrangler d1 migrations apply social-manager-db --remote
           command: deploy
           secrets: |
             JWT_SECRET
