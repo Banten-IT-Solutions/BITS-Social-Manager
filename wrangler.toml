@@ -3,10 +3,9 @@ main = "src/worker/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Custom domain — zone_id diisi otomatis oleh workflow GitHub Actions
-routes = [
-  { pattern = "social.bits.co.id", custom_domain = true, zone_id = "ZONE_ID_PLACEHOLDER" }
-]
+[[routes]]
+pattern = "social.bits.co.id"
+custom_domain = true
 
 [assets]
 directory = "./dist"
@@ -18,7 +17,3 @@ binding = "DB"
 database_name = "social-manager-db"
 database_id = "local-dev-id"
 migrations_dir = "migrations"
-
-[vars]
-JWT_SECRET = "change-me-in-production-min-32-chars-long"
-ENCRYPTION_KEY = "0000000000000000000000000000000000000000000000000000000000000000"

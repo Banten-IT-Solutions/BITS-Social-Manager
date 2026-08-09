@@ -2,7 +2,26 @@
 
 Modern social media account management platform. Organize and secure your social accounts across multiple projects with enterprise-grade encryption.
 
+[![Live](https://img.shields.io/website?url=https%3A%2F%2Fsocial.bits.co.id&label=social.bits.co.id)](https://social.bits.co.id)
+[![CI/CD Deploy](https://github.com/BITS-Cloud-Platform/social.bits.co.id/actions/workflows/deploy.yml/badge.svg)](https://github.com/BITS-Cloud-Platform/social.bits.co.id/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/BITS-Cloud-Platform/social.bits.co.id/blob/main/LICENSE)
+
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![Cloudflare D1](https://img.shields.io/badge/Cloudflare%20D1-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/d1/)
+[![Hono](https://img.shields.io/badge/Hono-E36002?logo=hono&logoColor=white)](https://hono.dev/)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle%20ORM-C5F74F?logo=drizzle&logoColor=black)](https://github.com/drizzle-team/drizzle-orm)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React 18](https://img.shields.io/badge/React-18-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+[![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)](https://zod.dev/)
+
 **Live at:** https://social.bits.co.id  
+**Hosted by:** Cloudflare (Workers + D1)
 **Repository:** https://github.com/BITS-Cloud-Platform/social.bits.co.id
 
 ---
@@ -332,13 +351,14 @@ ENCRYPTION_KEY=<64-hex-chars-32-bytes>
 
 Set via `wrangler secret put` before deploying.
 
-**Local development (in wrangler.toml [vars]):**
+**Local development (file `.dev.vars`, tidak di-commit):**
 
-```toml
-[vars]
-JWT_SECRET = "dev-secret-min-32-chars"
-ENCRYPTION_KEY = "0000000000000000000000000000000000000000000000000000000000000000"
+```txt
+JWT_SECRET=dev-secret-min-32-chars
+ENCRYPTION_KEY=0000...
 ```
+
+> Note: `[vars]` sudah dihapus dari `wrangler.toml`. Local dev membaca `.dev.vars`, produksi memakai `wrangler secret` (nilai secret selalu menimpa `[vars]` bila ada).
 
 ## 📝 Development Notes
 
