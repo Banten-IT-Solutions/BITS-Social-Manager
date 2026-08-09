@@ -6,7 +6,6 @@ export interface JWTPayload {
   sub: string;   // user id
   email: string;
   name: string;
-  ver: number;
   iat: number;
   exp: number;
 }
@@ -51,10 +50,9 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
     typeof data.sub !== 'string' ||
     typeof data.email !== 'string' ||
     typeof data.name !== 'string' ||
-    typeof data.ver !== 'number' ||
     typeof data.iat !== 'number' ||
     typeof data.exp !== 'number'
   ) throw new Error('Invalid payload');
   if (data.exp <= Math.floor(Date.now() / 1000)) throw new Error('Token expired');
-  return data;
+  return data as JWTPayload;
 }

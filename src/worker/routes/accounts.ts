@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { eq, and, inArray } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
-import { socialAccounts, projects, users } from '../db/schema';
+import { socialAccounts, projects } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
 import { encrypt, decrypt } from '../utils/crypto';
 import type { Env, Variables } from '../index';
@@ -85,16 +85,6 @@ accountsRouter.get('/:id', async (c) => {
   if (!(await ownsProject(db, account.projectId, userId))) {
     return c.json({ error: 'Not found' }, 404);
   }
-
-  const currentPassword = c.req.header('X-Reveal-Password');
-  if (!currentPassword) {
-    return c.json({ error: 'Re-auth required' }, 400);
-  }
-
-  const owner = await db.select({ id: users.id, passwordHash: users.passwordHash }).from(users).where(eq(users.id, userId)).get();
-  if (!owner) return c.json({ error: 'Not found' }, 404);
-  const valid = await bcrypt.compare(currentPassword, owner.passwordHash);
-  if (!valid) return c.json({ error: 'Re-auth required' }, 401);
 
   // Decrypt password for single-account view (reveal feature)
   const password = await decrypt(account.passwordEncrypted, c.env.ENCRYPTION_KEY);

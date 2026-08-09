@@ -169,14 +169,12 @@ function PasswordReveal({ accountId }: { accountId: string }) {
   const [password, setPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
 
   const reveal = async () => {
     if (show) { setShow(false); return; }
-    if (!currentPassword) return;
     setLoading(true);
     try {
-      const res = await api.accounts.get(accountId, currentPassword);
+      const res = await api.accounts.get(accountId);
       setPassword(res.account.password ?? null);
       setShow(true);
     } catch { /* ignore */ } finally {
@@ -210,7 +208,7 @@ function PasswordReveal({ accountId }: { accountId: string }) {
 
   if (!show) {
     return (
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={reveal} disabled={loading || !currentPassword} title="Show password">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={reveal} disabled={loading} title="Show password">
           {loading ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" /> : <Eye className="h-4 w-4" />}
         </Button>
       );
@@ -218,14 +216,6 @@ function PasswordReveal({ accountId }: { accountId: string }) {
 
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      <input
-        type="password"
-        className="h-8 w-28 rounded border border-zinc-700 bg-zinc-900 px-2 text-xs text-zinc-200 outline-none"
-        placeholder="Current pw"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-        autoComplete="current-password"
-      />
       <code className="text-xs bg-zinc-800 border border-zinc-700 px-2 py-1 rounded font-mono text-zinc-200 max-w-[140px] truncate select-all">
         {password ?? ''}
       </code>

@@ -43,7 +43,7 @@ describe('Auth route logic', () => {
 
   it('signJWT produces verifiable token with user data', async () => {
     const { signJWT } = await import('../../src/worker/utils/jwt');
-    const token = await signJWT({ sub: 'uid-1', email: 'u@u.com', name: 'User', ver: 0 }, JWT_SECRET);
+    const token = await signJWT({ sub: 'uid-1', email: 'u@u.com', name: 'User' }, JWT_SECRET);
     const payload = await verifyJWT(token, JWT_SECRET);
     expect(payload.sub).toBe('uid-1');
     expect(payload.email).toBe('u@u.com');

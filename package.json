@@ -15,7 +15,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply social-manager-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply social-manager-db",
     "test": "vitest run",
@@ -33,7 +32,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.56.4",
-    "react-router-dom": "^6.30.4",
+    "react-router-dom": "^7.18.2",
     "tailwind-merge": "^3.3.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.5"
@@ -48,13 +47,12 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.4",
-    "drizzle-kit": "^0.31.10",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
     "vite": "^6.4.3",
     "vitest": "^3.2.7",
-    "wrangler": "^4.119.0"
+    "wrangler": "^4.120.0"
   },
   "allowScripts": {
     "esbuild@0.25.12": true,
