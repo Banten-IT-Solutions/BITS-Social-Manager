@@ -2,7 +2,7 @@
 
 Modern social media account management platform. Organize and secure your social accounts across multiple projects with enterprise-grade encryption.
 
-[![Live](https://img.shields.io/website?url=https%3A%2F%2Fsocial.bits.co.id&label=social.bits.co.id)](https://social.bits.co.id)
+[![Live](https://img.shields.io/website?url=https%3A%2F%2Fsocial.bits.co.id&label=live)](https://social.bits.co.id)
 [![CI/CD Deploy](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml/badge.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/blob/main/LICENSE)
 
@@ -20,7 +20,7 @@ Modern social media account management platform. Organize and secure your social
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
 [![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)](https://zod.dev/)
 
-**Live at:** https://social.bits.co.id  
+**Live at:** `social.bits.co.id`  
 **Hosted by:** Cloudflare (Workers + D1)
 **Repository:** https://github.com/Banten-IT-Solutions/BITS-Social-Manager
 
@@ -85,7 +85,7 @@ Powered by [Banten IT Solutions](https://bits.co.id)
 ### 1. Install Dependencies
 
 ```bash
-npm install --legacy-peer-deps
+npm ci
 ```
 
 ### 2. Create D1 Database (First Time Only)
@@ -124,7 +124,7 @@ wrangler secret put JWT_SECRET
 wrangler secret put ENCRYPTION_KEY
 ```
 
-**wrangler.toml** has placeholders for local dev, but secrets via `wrangler secret` override them in production.
+**Catatan:** `D1_DATABASE_ID` bukan Worker secret. Workflow pakai nilai ini untuk isi `database_id` di `wrangler.toml` sebelum deploy. `JWT_SECRET` dan `ENCRYPTION_KEY` tetap disimpan di Cloudflare via `wrangler secret put` atau workflow sync.
 
 ### 5. Development
 
@@ -239,7 +239,7 @@ CREATE TABLE social_accounts (
 
 - `POST /api/auth/register` - Register user
 - `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout (client-side token removal)
+- `POST /api/auth/logout` - Logout (clear client token only, no server session)
 
 ### Profile
 
@@ -403,10 +403,10 @@ wrangler secret put ENCRYPTION_KEY
 
 ### Peer Dependency Warning
 ```bash
-npm install --legacy-peer-deps
+npm ci
 ```
 
-Workers-types has stricter peer deps; `--legacy-peer-deps` resolves safely.
+Lockfile sudah terkunci. Kalau install gagal, perbaiki dependency, jangan paksa legacy mode.
 
 ### CORS Errors in Production
 Update CORS origin in `src/worker/index.ts` to match your deployment domain.
@@ -424,28 +424,40 @@ Workflow menggunakan versi terbaru dari semua action:
 
 Pada setiap `push` ke `main` (atau via **Run workflow** manual), workflow otomatis:
 
-1. `npm ci --legacy-peer-deps` — install dependensi
+1. `npm ci` — install dependensi
 2. `npm run type-check` — validasi TypeScript strict
 3. `npm run test` — jalankan unit tests (17 tests)
 4. `npm run build` — build client & worker
-5. `wrangler d1 migrations apply social-manager-db --remote` — apply migrasi D1
-6. `wrangler deploy` — deploy worker + static assets
+5. `wrangler secret bulk` untuk `JWT_SECRET` dan `ENCRYPTION_KEY` dari GitHub Secrets
+6. `wrangler d1 migrations apply social-manager-db --remote` — apply migrasi D1
+7. `wrangler deploy` — deploy worker + static assets
 
-### 🔑 Setup Sekali (sebelum push pertama)
+### 🔑 Setup Sekali
 
-Buka **Settings → Secrets and variables → Actions** di GitHub repo, lalu tambahkan 2 secrets:
+1. Buka **Settings → Secrets and variables → Actions** di GitHub repo.
+2. Tambahkan 5 secrets ini:
 
 | Secret | Nilai | Cara dapat |
 |--------|-------|------------|
 | `CLOUDFLARE_API_TOKEN` | API token Cloudflare | Dashboard **My Profile → API Tokens → Create Token** dengan permissions: `Account - Workers Scripts - Edit`, `Account - D1 - Edit`, `Account - Account Settings - Read`, `Zone - Workers Routes - Edit`, `Zone - Zone - Read` |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID Cloudflare | Dashboard → sidebar kanan (berikut nama akun, format hex 32 karakter) |
 | `D1_DATABASE_ID` | ID D1 database (`social-manager-db`) | Jalankan `wrangler d1 list` lalu salin kolom `database_id` |
+| `JWT_SECRET` | Secret JWT Worker | Simpan di GitHub Secrets untuk workflow sync |
+| `ENCRYPTION_KEY` | Secret AES Worker | Simpan di GitHub Secrets untuk workflow sync |
 
-> ⚠️ **`D1_DATABASE_ID` wajib disetel.** Workflow mengisi `database_id` di `wrangler.toml` dari secret ini (placeholder `"local-dev-id"` dipakai hanya untuk dev lokal). Tanpa secret ini, migrasi remote gagal dengan `Invalid property: databaseId => Invalid uuid`.
+3. Set domain di `wrangler.toml`.
 
-> 🎯 **Custom domain `social.bits.co.id` dipasang otomatis** saat deploy. `wrangler.toml` mendeklarasikan `[[routes]]` dengan `custom_domain = true`, sehingga wrangler me-resolve `zone_id` dari akun secara otomatis — tidak perlu secret/step `ZONE_ID`. Token API cukup mencantumkan permission `Zone - Workers Routes - Edit` pada zona `bits.co.id`.
+Contoh:
 
-> ℹ️ `JWT_SECRET` dan `ENCRYPTION_KEY` sudah diset satu kali via `wrangler secret put` dan dipertahankan Cloudflare antar deploy — tidak perlu di-set di GitHub.
+```toml
+[[routes]]
+pattern = "social.bits.co.id" # fork: "yourdomain.com"
+custom_domain = true
+```
+
+> ⚠️ `D1_DATABASE_ID` wajib disetel. Workflow isi `database_id` di `wrangler.toml` dari secret ini. Tanpa secret ini, migrasi remote gagal.
+
+> ℹ️ Workflow sinkron `JWT_SECRET` dan `ENCRYPTION_KEY` ke Cloudflare tiap deploy dari GitHub Secrets.
 
 ### 🧪 Uji coba tanpa push
 
@@ -462,10 +474,10 @@ Buka tab **Actions → Deploy to Cloudflare → Run workflow** lalu pilih branch
 - [ ] `wrangler d1 create social-manager-db`
 - [ ] Update `database_id` di `wrangler.toml` (ID asli, bukan placeholder)
 - [ ] `npm run db:migrate:remote`
-- [ ] `wrangler secret put JWT_SECRET`
-- [ ] `wrangler secret put ENCRYPTION_KEY`
+- [ ] Set `JWT_SECRET` di GitHub Secrets
+- [ ] Set `ENCRYPTION_KEY` di GitHub Secrets
 - [ ] Update CORS origin untuk production domain
-- [ ] Tambah secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, & `D1_DATABASE_ID` di GitHub
+- [ ] Tambah secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_DATABASE_ID`, `JWT_SECRET`, `ENCRYPTION_KEY` di GitHub
 - [ ] Tindakan terakhir: push ke `main` (workflow auto-deploy)
 
 **Setelah itu**, semua update cukup `git push` ke `main` — deploy otomatis.
@@ -482,9 +494,11 @@ Buka tab **Actions → Deploy to Cloudflare → Run workflow** lalu pilih branch
 Di `wrangler.toml`:
 ```toml
 [[routes]]
-pattern = "social.bits.co.id"
+pattern = "social.bits.co.id" # fork: "yourdomain.com"
 custom_domain = true
 ```
+
+Fork: ganti `pattern` jadi domain target sendiri, lalu push ke `main`.
 
 ### Database Backups
 ```bash

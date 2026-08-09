@@ -9,11 +9,26 @@ interface Entry {
 }
 
 const store = new Map<string, Entry>();
+const MAX_KEYS = 1000;
+
+function sweep(now: number) {
+  for (const [key, entry] of store) {
+    if (entry.resetAt < now) store.delete(key);
+  }
+  if (store.size <= MAX_KEYS) return;
+  const overflow = store.size - MAX_KEYS;
+  let removed = 0;
+  for (const key of store.keys()) {
+    store.delete(key);
+    if (++removed >= overflow) break;
+  }
+}
 
 export function rateLimit(max: number, windowMs: number) {
   return async (c: { req: { header: (k: string) => string | undefined } }, next: () => Promise<Response | void>): Promise<Response | void> => {
-    const ip = (c.req.header('CF-Connecting-IP') ?? c.req.header('X-Forwarded-For') ?? 'unknown').split(',')[0]!.trim();
+    const ip = (c.req.header('CF-Connecting-IP') ?? 'unknown').split(',')[0]!.trim();
     const now = Date.now();
+    sweep(now);
     const entry = store.get(ip);
 
     if (!entry || entry.resetAt < now) {

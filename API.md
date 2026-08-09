@@ -9,17 +9,19 @@ Complete API reference for all endpoints.
 
 ## Authentication
 
-All protected endpoints require a JWT token in the Authorization header:
+All protected endpoints require JWT token in Authorization header:
 
 ```
 Authorization: Bearer <jwt_token>
 ```
 
-Tokens expire after **7 days**.
+Tokens expire after **7 days**. Client stores token in `localStorage`; logout clears client token only. XSS hardening required.
 
 ---
 
 ## Endpoints
+
+**Error format:** all errors return JSON shape `{ "error": "message" }` unless noted.
 
 ### Health Check
 
@@ -135,7 +137,7 @@ Authenticate a user and get a JWT token.
 
 #### `POST /api/auth/logout`
 
-Invalidates the session client-side (token is removed from localStorage by the client). Does **not** require a valid token.
+Clears client token only. Server session not stored. Does **not** require valid token.
 
 **Response (200 OK):**
 ```json
@@ -502,7 +504,7 @@ Delete a social account.
 | `POST /api/auth/login` | 10 requests / 15 min / IP |
 | All other endpoints | No limit |
 
-When rate-limited the API returns HTTP `429` with a `Retry-After` header (seconds until retry) and body `{ "error": "Too many requests" }`.
+When rate-limited the API returns HTTP `429` with `Retry-After` header (seconds until retry) and body `{ "error": "Too many requests" }`.
 
 ---
 

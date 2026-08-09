@@ -25,12 +25,12 @@ const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 // Security headers
 app.use('*', secureHeaders());
 
-// CORS — tighten origin in production
+// CORS — reflect origin, no credentials
 app.use('/api/*', cors({
   origin: (origin) => origin ?? '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  credentials: false,
 }));
 
 // Routes

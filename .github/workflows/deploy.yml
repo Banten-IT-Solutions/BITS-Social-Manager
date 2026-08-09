@@ -28,7 +28,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Type-check
         run: npm run type-check
@@ -49,17 +49,25 @@ jobs:
         run: |
           for var in D1_DATABASE_ID CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID JWT_SECRET ENCRYPTION_KEY; do
             if [ -z "${!var}" ]; then
-              echo "::error::$var secret tidak diset. Deploy dibatalkan."
+              echo "::error::$var secret tidak ter-set. Deploy dibatalkan."
               exit 1
             fi
           done
           echo "Semua secret yang dibutuhkan tersedia."
 
+      - name: Sync Worker secrets from GitHub secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+        run: |
+          printf '%s' "$JWT_SECRET" | npx wrangler secret put JWT_SECRET
+          printf '%s' "$ENCRYPTION_KEY" | npx wrangler secret put ENCRYPTION_KEY
+
       - name: Inject D1 database ID into wrangler.toml
         env:
           D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
         run: |
-          # custom_domain = true → zone id di-resolve otomatis dari akun
           sed -i "s|database_id = \"local-dev-id\"|database_id = \"$D1_DATABASE_ID\"|" wrangler.toml
           echo "Sanity check:"
           grep -E "database_id|pattern" wrangler.toml
@@ -72,13 +80,20 @@ jobs:
           preCommands: |
             wrangler d1 migrations apply social-manager-db --remote
           command: deploy
-          secrets: |
-            JWT_SECRET
-            ENCRYPTION_KEY
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
       - name: Announce deployment URL
         id: deploy_output
-        run: echo "Deploy ke https://social.bits.co.id selesai — lihat detail di Cloudflare Dashboard"
+        run: echo "Deploy selesai — lihat detail di Cloudflare Dashboard"
+
+      - name: Smoke test health endpoint
+        run: |
+          domain=$(sed -n 's/^pattern = "\(.*\)"$/\1/p' wrangler.toml | head -n 1)
+          url="https://${domain}"
+          for i in 1 2 3 4 5; do
+            if curl -fsS "$url/api/health"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Smoke test gagal"
+          exit 1

@@ -57,7 +57,14 @@ profile.put('/', zValidator('json', updateSchema), async (c) => {
     updates.passwordHash = await bcrypt.hash(data.newPassword, 10);
   }
 
-  await db.update(users).set(updates).where(eq(users.id, userId)).run();
+  try {
+    await db.update(users).set(updates).where(eq(users.id, userId)).run();
+  } catch (error) {
+    if (error instanceof Error && /UNIQUE/i.test(error.message)) {
+      return c.json({ error: 'Email already in use' }, 409);
+    }
+    throw error;
+  }
 
   const updated = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, userId)).get();
   return c.json({ user: updated });

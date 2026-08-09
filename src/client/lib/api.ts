@@ -50,7 +50,9 @@ export const api = {
   accounts: {
     list: (projectId?: string) =>
       req<{ accounts: SocialAccount[] }>(`/accounts${projectId ? `?projectId=${projectId}` : ''}`),
-    get: (id: string) => req<{ account: SocialAccount }>(`/accounts/${id}`),
+    get: (id: string, currentPassword?: string) => req<{ account: SocialAccount }>(`/accounts/${id}`, {
+      headers: currentPassword ? { 'X-Reveal-Password': currentPassword } : {},
+    }),
     create: (body: { projectId: string; platform: string; accountName: string; emailHandle: string; password: string; notes?: string }) =>
       req<{ account: SocialAccount }>('/accounts', { method: 'POST', body: JSON.stringify(body) }),
     update: (id: string, body: { platform?: string; accountName?: string; emailHandle?: string; password?: string; notes?: string }) =>

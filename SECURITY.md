@@ -70,14 +70,17 @@ const encrypted = btoa(String.fromCharCode(...combined));
 4. **Verification**: Every protected API call
 5. **Expiry**: 7 days from issue
 
+> Note: localStorage is current trade-off, not secure storage. XSS hardening mandatory.
+
 ### Security Rules
 
 ✅ **DO:**
 - Verify signature on every request
 - Check expiration (`exp` claim)
 - Use HTTPS in production
-- Store JWT in localStorage (`token`) (XSS protection via CSP)
 - Use strong JWT_SECRET (min 32 chars)
+- Keep CSP strict
+- Treat localStorage token as XSS-exposed
 
 ❌ **DON'T:**
 - Store sensitive data in payload
@@ -85,6 +88,7 @@ const encrypted = btoa(String.fromCharCode(...combined));
 - Skip signature verification
 - Extend expiry infinitely
 - Share tokens between users
+- Assume localStorage is safe
 
 ---
 
@@ -126,7 +130,7 @@ const user = await db
 - ✅ Set CSP headers
 - ✅ Sanitize user-generated content
 
-**CSP Headers (TODO):**
+**CSP Headers:**
 ```typescript
 contentSecurityPolicy: {
   defaultSrc: ["'self'"],
@@ -148,7 +152,7 @@ contentSecurityPolicy: {
 - ✅ JWT in Authorization header (not cookies)
 - ✅ SameSite cookies (if using cookies)
 - ✅ Verify Origin header
-- ⚠️ CSRF tokens (not implemented - not needed for Bearer auth)
+- ✅ CSRF tokens not needed for Bearer auth
 
 **Current Protection:**
 - Token stored in localStorage
@@ -170,8 +174,8 @@ done
 **Mitigation:**
 - ✅ Rate limiting: 10 attempts per 15 minutes per IP
 - ✅ Bcrypt slows down verification (~300ms per attempt)
-- ⚠️ Account lockout (TODO)
-- ⚠️ CAPTCHA (TODO)
+- ⚠️ Account lockout (planned)
+- ⚠️ CAPTCHA (planned)
 
 **Current Implementation:**
 ```typescript
@@ -233,8 +237,8 @@ curl -X POST /api/auth/register -d '{"email":"test@example.com",...}'
 **Mitigation:**
 - ✅ HTTPS only
 - ✅ Short token expiry (7 days)
-- ⚠️ Refresh tokens (TODO)
-- ⚠️ Token revocation (TODO - requires KV store)
+- ⚠️ Refresh tokens (planned)
+- ⚠️ Token revocation (planned; needs state store)
 
 **Future Enhancement:**
 ```typescript
@@ -384,8 +388,8 @@ npx snyk test
 
 ### Pre-Deployment
 
-- [ ] Set JWT_SECRET via `wrangler secret put`
-- [ ] Set ENCRYPTION_KEY via `wrangler secret put`
+- [ ] Set JWT_SECRET in Cloudflare Secrets
+- [ ] Set ENCRYPTION_KEY in Cloudflare Secrets
 - [ ] Update CORS origin to production domain
 - [ ] Enable HTTPS only (Cloudflare auto)
 - [ ] Remove debug logs
@@ -488,6 +492,21 @@ If you find a security issue:
    - Scoped permissions
 
 ---
+
+## Status
+
+| Area | Status |
+|------|--------|
+| Password hashing | implemented |
+| Account password encryption | implemented |
+| JWT auth | implemented |
+| Rate limiting | implemented |
+| CSP headers | planned |
+| Refresh tokens | planned |
+| Token revocation | planned |
+| Account lockout | planned |
+| CAPTCHA | planned |
+| Audit logs | planned |
 
 **Current Security Grade: B+**
 

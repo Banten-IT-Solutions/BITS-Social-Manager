@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
-import { socialAccounts, projects } from '../db/schema';
+import { socialAccounts, projects, users } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
 import { encrypt, decrypt } from '../utils/crypto';
 import type { Env, Variables } from '../index';
@@ -53,11 +54,7 @@ accountsRouter.get('/', async (c) => {
   const projectIds = userProjects.map(p => p.id);
   if (projectIds.length === 0) return c.json({ accounts: [] });
 
-  const all = [];
-  for (const pid of projectIds) {
-    const rows = await db.select().from(socialAccounts).where(eq(socialAccounts.projectId, pid)).all();
-    all.push(...rows);
-  }
+  const all = await db.select().from(socialAccounts).where(inArray(socialAccounts.projectId, projectIds)).all();
   return c.json({ accounts: all.map(a => ({ ...a, passwordEncrypted: undefined })) });
 });
 
@@ -89,8 +86,20 @@ accountsRouter.get('/:id', async (c) => {
     return c.json({ error: 'Not found' }, 404);
   }
 
+  const currentPassword = c.req.header('X-Reveal-Password');
+  if (!currentPassword) {
+    return c.json({ error: 'Re-auth required' }, 400);
+  }
+
+  const owner = await db.select({ id: users.id, passwordHash: users.passwordHash }).from(users).where(eq(users.id, userId)).get();
+  if (!owner) return c.json({ error: 'Not found' }, 404);
+  const valid = await bcrypt.compare(currentPassword, owner.passwordHash);
+  if (!valid) return c.json({ error: 'Re-auth required' }, 401);
+
   // Decrypt password for single-account view (reveal feature)
   const password = await decrypt(account.passwordEncrypted, c.env.ENCRYPTION_KEY);
+  c.header('Cache-Control', 'no-store');
+  c.header('Pragma', 'no-cache');
   return c.json({ account: { ...account, password, passwordEncrypted: undefined } });
 });
 

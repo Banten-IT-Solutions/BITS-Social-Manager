@@ -1,14 +1,13 @@
 {
   "name": "bits-social-manager",
   "version": "1.0.0",
-  "description": "BITS Social Manager — Live at https://social.bits.co.id — Powered by Banten IT Solutions (https://bits.co.id)",
+  "description": "BITS Social Manager — Cloudflare Workers social manager",
   "author": "Banten IT Solutions",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Banten-IT-Solutions/BITS-Social-Manager"
   },
-  "homepage": "https://social.bits.co.id",
   "type": "module",
   "private": true,
   "scripts": {
