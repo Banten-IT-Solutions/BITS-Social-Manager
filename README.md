@@ -1,9 +1,9 @@
 <div align="center">
   <h1>BITS Social Manager</h1>
-  <p><strong>Social account manager for BITS projects</strong></p>
   <p>
-    <a href="https://social.bits.co.id" target="_blank">social.bits.co.id</a> ·
-    <a href="https://bits.co.id" target="_blank">Banten IT Solutions</a>
+    <a href="https://social.bits.co.id">
+      <img src="https://img.shields.io/badge/status-online-success?style=flat" alt="social.bits.co.id online" />
+    </a>
   </p>
   <p>
     Manage, secure, and organize social account credentials across projects
@@ -265,5 +265,5 @@ Distributed under MIT License. See `LICENSE`.
 ---
 
 <div align="center">
-  <strong>BITS Social Manager</strong> Made with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
+  <strong>BITS Social Manager</strong> Developed with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
 </div>
