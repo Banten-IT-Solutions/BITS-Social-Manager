@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
 
 concurrency:
@@ -37,24 +39,46 @@ jobs:
       - name: Build client assets
         run: npm run build
 
-      - name: Inject D1 database ID into wrangler.toml
+      - name: Validate required secrets
+        env:
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         run: |
-          # D1 database ID (wajib) — custom domain tidak perlu di-inject lagi
-          # (custom_domain = true → wrangler resolve zone_id otomatis dari akun)
-          if [ -n "${{ secrets.D1_DATABASE_ID }}" ]; then
-            sed -i "s|database_id = \"local-dev-id\"|database_id = \"${{ secrets.D1_DATABASE_ID }}\"|" wrangler.toml
-          else
-            echo "::warning::D1_DATABASE_ID secret not set. Using database_id from wrangler.toml."
-          fi
+          for var in D1_DATABASE_ID CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID JWT_SECRET ENCRYPTION_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "::error::$var secret tidak diset. Deploy dibatalkan."
+              exit 1
+            fi
+          done
+          echo "Semua secret yang dibutuhkan tersedia."
 
+      - name: Inject D1 database ID into wrangler.toml
+        env:
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+        run: |
+          # custom_domain = true → zone id di-resolve otomatis dari akun
+          sed -i "s|database_id = \"local-dev-id\"|database_id = \"$D1_DATABASE_ID\"|" wrangler.toml
           echo "Sanity check:"
           grep -E "database_id|pattern" wrangler.toml
 
-      - name: Deploy Worker & apply D1 migrations
+      - name: Deploy Worker & apply D1 migrations & sync secrets
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: |
+          preCommands: |
             d1 migrations apply social-manager-db --remote
-            deploy
+          command: deploy
+          secrets: |
+            JWT_SECRET
+            ENCRYPTION_KEY
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+
+      - name: Announce deployment URL
+        id: deploy_output
+        run: echo "Deploy ke https://social.bits.co.id selesai — lihat detail di Cloudflare Dashboard"
