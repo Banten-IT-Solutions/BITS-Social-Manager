@@ -18,25 +18,9 @@
     <img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
     <img src="https://img.shields.io/badge/Tailwind%20CSS-38B2AC?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />
-    <img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright" />
     <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="MIT License" />
   </p>
 </div>
-
----
-
-## 📋 Table of Contents
-
-- [Features](#features)
-- [Live Demo](#live-demo)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Quick Start](#quick-start)
-- [Development](#development)
-- [Environment Configuration](#environment-configuration)
-- [API Endpoints](#api-endpoints)
-- [Security Notes](#security-notes)
-- [License](#license)
 
 ---
 
@@ -53,20 +37,6 @@
 | **Cloudflare Native Deploy** | Workers, D1, custom domain, assets |
 | **Type-safe UI + API** | React, Hono, Zod, TypeScript |
 | **Test Coverage** | Unit tests + e2e tests |
-
----
-
-## 🌐 Live Demo
-
-Project live at:
-
-<div align="center">
-  <a href="https://social.bits.co.id" style="font-size: 1.5em; font-weight: bold;">
-    🔗 https://social.bits.co.id
-  </a>
-</div>
-
----
 
 ## 🛠️ Tech Stack
 
@@ -295,12 +265,5 @@ Distributed under MIT License. See `LICENSE`.
 ---
 
 <div align="center">
-  <p>
-    <strong>BITS Social Manager</strong> ·
-    <a href="https://social.bits.co.id">social.bits.co.id</a> ·
-    <a href="https://bits.co.id">bits.co.id</a>
-  </p>
-  <p>
-    Made with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
-  </p>
+  <strong>BITS Social Manager</strong> Made with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
 </div>
