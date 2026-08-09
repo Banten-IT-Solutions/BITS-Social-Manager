@@ -1,79 +1,147 @@
-# BITS Social Manager
+<div align="center">
+  <h1>BITS Social Manager</h1>
+  <p><strong>Social account manager for BITS projects</strong></p>
+  <p>
+    <a href="https://social.bits.co.id" target="_blank">social.bits.co.id</a> ·
+    <a href="https://bits.co.id" target="_blank">Banten IT Solutions</a>
+  </p>
+  <p>
+    Manage, secure, and organize social account credentials across projects
+  </p>
+  <br>
+  <p>
+    <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
+    <img src="https://img.shields.io/badge/Cloudflare%20D1-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare D1" />
+    <img src="https://img.shields.io/badge/Hono-E36002?style=flat&logo=hono&logoColor=white" alt="Hono" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/React-18-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React 18" />
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Tailwind%20CSS-38B2AC?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />
+    <img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright" />
+    <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="MIT License" />
+  </p>
+</div>
 
-[![Production](https://img.shields.io/badge/Production-social.bits.co.id-blue?logo=cloudflare&logoColor=white)](https://social.bits.co.id) [![CI](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml/badge.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml) [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/blob/main/LICENSE) [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/) [![Cloudflare D1](https://img.shields.io/badge/Cloudflare%20D1-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/d1/) [![Hono](https://img.shields.io/badge/Hono-E36002?logo=hono&logoColor=white)](https://hono.dev/) [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![React 18](https://img.shields.io/badge/React-18-20232A?logo=react&logoColor=61DAFB)](https://react.dev/) [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vite.dev/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/) [![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/) [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/) [![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)](https://zod.dev/)
+---
 
-Modern social media account management platform for organizing, securing, and managing account credentials across multiple projects.
+## 📋 Table of Contents
 
-## Overview
+- [Features](#features)
+- [Live Demo](#live-demo)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Development](#development)
+- [Environment Configuration](#environment-configuration)
+- [API Endpoints](#api-endpoints)
+- [Security Notes](#security-notes)
+- [License](#license)
 
-- Multi-project account organization
-- Encrypted social account password storage
-- JWT authentication
-- Cloudflare Workers + D1 deployment
-- Type-safe frontend and backend
+---
 
-## Tech Stack
+## ✨ Features
 
-**Frontend**
-- React 18 + TypeScript
-- React Router
-- React Hook Form + Zod
-- Zustand
-- Tailwind CSS
-- Lucide React
+| Feature | Description |
+|---------|-------------|
+| **Project Organization** | Group social accounts per project |
+| **Encrypted Credentials** | Store passwords with AES-256-GCM |
+| **JWT Authentication** | Register, login, logout, profile update |
+| **Account Reveal Flow** | Decrypt password only on single account view |
+| **Rate Limited Auth** | Limit register/login abuse |
+| **Role-safe Ownership Checks** | Projects and accounts locked per user |
+| **Cloudflare Native Deploy** | Workers, D1, custom domain, assets |
+| **Type-safe UI + API** | React, Hono, Zod, TypeScript |
+| **Test Coverage** | Unit tests + e2e tests |
 
-**Backend**
-- Hono
-- Cloudflare D1 (SQLite)
-- Drizzle ORM
-- JWT via Web Crypto API
-- bcryptjs
-- AES-256-GCM
+---
 
-**Tooling**
-- Vite
-- Vitest
-- Playwright
-- Wrangler
+## 🌐 Live Demo
 
-## Supported Platforms
+Project live at:
 
-- Gmail
-- YouTube
-- Facebook
-- Instagram
-- Threads
-- WhatsApp
-- Telegram
-- TikTok
-- Shopee
-- X (Twitter)
-- LinkedIn
-- GitHub
+<div align="center">
+  <a href="https://social.bits.co.id" style="font-size: 1.5em; font-weight: bold;">
+    🔗 https://social.bits.co.id
+  </a>
+</div>
 
-## Requirements
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, React Router, React Hook Form, Zod, Zustand, Lucide React |
+| **Backend** | Cloudflare Workers, Hono, D1 (SQLite), Drizzle ORM, bcryptjs, Web Crypto API |
+| **Testing** | Vitest, Playwright |
+| **Tooling** | Wrangler, ESLint-style TypeScript checks, npm |
+
+---
+
+## 📁 Project Structure
+
+```text
+BITS-Social-Manager/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # CI deploy pipeline
+├── migrations/
+│   └── 0001_init.sql           # D1 schema migration
+├── public/
+│   └── favicon.svg             # Static public asset
+├── src/
+│   ├── client/
+│   │   ├── App.tsx             # App router + layout shell
+│   │   ├── main.tsx            # Client entrypoint
+│   │   ├── styles.css          # Global styles
+│   │   ├── components/         # Layout, sidebar, UI, route guards
+│   │   ├── lib/                # API client, types, utils
+│   │   ├── pages/              # Login, register, dashboard, profile, project
+│   │   └── store/              # Auth state
+│   └── worker/
+│       ├── index.ts            # Worker entry + CORS + assets routing
+│       ├── db/                 # D1 connection and schema
+│       ├── middleware/         # Auth and rate limit
+│       ├── routes/             # auth, profile, projects, accounts
+│       └── utils/              # JWT and crypto helpers
+├── tests/
+│   ├── unit/                   # auth, crypto, jwt tests
+│   └── e2e/                    # app smoke test
+├── API.md                      # API reference
+├── SECURITY.md                 # Security notes
+├── LICENSE                     # MIT license
+├── package.json
+├── wrangler.toml
+└── vite.config.ts
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Node.js 24+
 - npm
 - Cloudflare account
 - D1 database
-- GitHub repo secrets
 
-## Quick Start
-
-### 1. Install dependencies
+### Steps
 
 ```bash
+git clone https://github.com/Banten-IT-Solutions/BITS-Social-Manager.git
+cd BITS-Social-Manager
 npm ci
 ```
 
-### 2. Create D1 database
+Create D1 database:
 
 ```bash
 wrangler d1 create social-manager-db
 ```
 
-Copy `database_id` into `wrangler.toml`:
+Set `database_id` in `wrangler.toml`:
 
 ```toml
 [[d1_databases]]
@@ -82,92 +150,157 @@ database_name = "social-manager-db"
 database_id = "YOUR_ID_HERE"
 ```
 
-### 3. Apply migrations
+Apply migration:
 
 ```bash
 npm run db:migrate:local
-npm run db:migrate:remote
 ```
 
-### 4. Set secrets
+Set secrets:
 
 ```bash
 wrangler secret put JWT_SECRET
 wrangler secret put ENCRYPTION_KEY
 ```
 
-### 5. Run local development
+Run dev:
 
 ```bash
 npm run dev
 ```
 
+Access:
+
 - Frontend: `http://localhost:5173`
 - Worker API: `http://localhost:8787`
-- API proxied through Vite
 
-### 6. Build and deploy
+Build:
 
 ```bash
 npm run build
+```
+
+Deploy:
+
+```bash
 npm run deploy
 ```
 
-## Configuration
+---
 
-### Production environment
+## 💻 Development
 
-Set these values in production:
+### Scripts
 
-- `JWT_SECRET`
-- `ENCRYPTION_KEY`
-- `D1_DATABASE_ID`
-- Cloudflare API token and account ID
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Run Vite + Wrangler dev |
+| `npm run build` | Build frontend assets |
+| `npm run preview` | Preview frontend build |
+| `npm run deploy` | Build then deploy Worker |
+| `npm run test` | Run unit tests |
+| `npm run test:e2e` | Run Playwright tests |
+| `npm run type-check` | Run TypeScript checks |
 
-### Custom domain
+### Local data
 
-Edit `wrangler.toml`:
+- `migrations/` for D1 schema
+- `.wrangler/` for local runtime state
+- no Docker layer here; Cloudflare-first project
+
+---
+
+## ⚙️ Environment Configuration
+
+### Required variables
+
+| Variable | Description |
+|----------|-------------|
+| `JWT_SECRET` | JWT signing secret |
+| `ENCRYPTION_KEY` | AES-256-GCM secret |
+| `D1_DATABASE_ID` | Cloudflare D1 database ID |
+| `CLOUDFLARE_API_TOKEN` | GitHub Actions deploy token |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
+
+### Production domain
+
+`wrangler.toml` default route:
 
 ```toml
 [[routes]]
-pattern = "social.bits.co.id" # fork: "yourdomain.com"
+pattern = "social.bits.co.id"
 custom_domain = true
 ```
 
-Fork use same setup, only `pattern` change to target domain.
+Fork use same file, change `pattern` to own domain.
 
-## Project Structure
+---
 
-```text
-src/
-├── client/
-│   ├── components/
-│   ├── lib/
-│   ├── pages/
-│   └── store/
-└── worker/
-    ├── db/
-    ├── middleware/
-    ├── routes/
-    └── utils/
-```
+## 📡 API Endpoints
 
-## Customization
+### Auth
 
-### Add more platforms
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Register user |
+| `POST` | `/api/auth/login` | Login user |
+| `POST` | `/api/auth/logout` | Logout user |
 
-1. Update `PLATFORMS` in `src/client/lib/types.ts`
-2. Update icon in `src/client/components/PlatformIcon.tsx`
-3. Update enum in `src/worker/routes/accounts.ts`
-4. Redeploy
+### Profile
 
-### Database backups
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/profile` | Get profile |
+| `PUT` | `/api/profile` | Update name, email, password |
 
-```bash
-wrangler d1 backup create social-manager-db
-wrangler d1 backup list social-manager-db
-```
+### Projects
 
-## Credits
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/projects` | List projects |
+| `POST` | `/api/projects` | Create project |
+| `GET` | `/api/projects/{id}` | Get project |
+| `PUT` | `/api/projects/{id}` | Update project |
+| `DELETE` | `/api/projects/{id}` | Delete project |
 
-Developed with ❤️ by [Banten IT Solutions](https://bits.co.id)
+### Accounts
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/accounts` | List accounts across user's projects |
+| `GET` | `/api/accounts?projectId={id}` | List accounts for one project |
+| `POST` | `/api/accounts` | Create account |
+| `GET` | `/api/accounts/{id}` | Reveal single password |
+| `PUT` | `/api/accounts/{id}` | Update account |
+| `DELETE` | `/api/accounts/{id}` | Delete account |
+
+---
+
+## 🔐 Security Notes
+
+- Password stored encrypted, not plain text
+- JWT required for protected routes
+- Project ownership checked before account access
+- Rate limit on auth endpoints
+- `passwordEncrypted` not returned on list endpoints
+- single-account reveal uses `Cache-Control: no-store`
+- CORS currently permissive for Workers deployment flow; lock it tighter if needed per domain
+
+---
+
+## 📄 License
+
+Distributed under MIT License. See `LICENSE`.
+
+---
+
+<div align="center">
+  <p>
+    <strong>BITS Social Manager</strong> ·
+    <a href="https://social.bits.co.id">social.bits.co.id</a> ·
+    <a href="https://bits.co.id">bits.co.id</a>
+  </p>
+  <p>
+    Made with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
+  </p>
+</div>
