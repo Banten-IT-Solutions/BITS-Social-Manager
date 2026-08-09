@@ -1,12 +1,12 @@
 {
-  "name": "social-manager",
+  "name": "bits-social-manager",
   "version": "1.0.0",
-  "description": "Social Manager — Live at https://social.bits.co.id — Powered by Banten IT Solutions (https://bits.co.id)",
+  "description": "BITS Social Manager — Live at https://social.bits.co.id — Powered by Banten IT Solutions (https://bits.co.id)",
   "author": "Banten IT Solutions",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BITS-Cloud-Platform/social.bits.co.id"
+    "url": "https://github.com/Banten-IT-Solutions/BITS-Social-Manager"
   },
   "homepage": "https://social.bits.co.id",
   "type": "module",

@@ -43,7 +43,7 @@ export function LoginPage() {
               <Shield className="h-6 w-6 text-zinc-400" />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-zinc-100">SocialManager</h1>
+          <h1 className="text-xl font-semibold text-zinc-100">BITS Social Manager</h1>
           <p className="text-sm text-zinc-500">Sign in to your account</p>
         </div>
 

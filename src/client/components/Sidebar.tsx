@@ -27,7 +27,7 @@ export function Sidebar() {
     <div className="flex h-full flex-col bg-zinc-950 border-r border-zinc-800">
       {/* Logo - Shield Icon */}
       <div className="flex h-14 items-center justify-center border-b border-zinc-800">
-        <Tooltip content="Social Manager" side="right">
+        <Tooltip content="BITS Social Manager" side="right">
           <Link to="/dashboard" className="flex items-center justify-center w-10 h-10 rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors">
             <Shield className="h-5 w-5 text-white" />
           </Link>

@@ -1,10 +1,10 @@
-# Social Manager
+# BITS Social Manager
 
 Modern social media account management platform. Organize and secure your social accounts across multiple projects with enterprise-grade encryption.
 
 [![Live](https://img.shields.io/website?url=https%3A%2F%2Fsocial.bits.co.id&label=social.bits.co.id)](https://social.bits.co.id)
-[![CI/CD Deploy](https://github.com/BITS-Cloud-Platform/social.bits.co.id/actions/workflows/deploy.yml/badge.svg)](https://github.com/BITS-Cloud-Platform/social.bits.co.id/actions/workflows/deploy.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/BITS-Cloud-Platform/social.bits.co.id/blob/main/LICENSE)
+[![CI/CD Deploy](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml/badge.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Banten-IT-Solutions/BITS-Social-Manager/blob/main/LICENSE)
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Cloudflare D1](https://img.shields.io/badge/Cloudflare%20D1-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/d1/)
@@ -22,7 +22,7 @@ Modern social media account management platform. Organize and secure your social
 
 **Live at:** https://social.bits.co.id  
 **Hosted by:** Cloudflare (Workers + D1)
-**Repository:** https://github.com/BITS-Cloud-Platform/social.bits.co.id
+**Repository:** https://github.com/Banten-IT-Solutions/BITS-Social-Manager
 
 ---
 
@@ -440,11 +440,10 @@ Buka **Settings → Secrets and variables → Actions** di GitHub repo, lalu tam
 | `CLOUDFLARE_API_TOKEN` | API token Cloudflare | Dashboard **My Profile → API Tokens → Create Token** dengan permissions: `Account - Workers Scripts - Edit`, `Account - D1 - Edit`, `Account - Account Settings - Read`, `Zone - Workers Routes - Edit`, `Zone - Zone - Read` |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID Cloudflare | Dashboard → sidebar kanan (berikut nama akun, format hex 32 karakter) |
 | `D1_DATABASE_ID` | ID D1 database (`social-manager-db`) | Jalankan `wrangler d1 list` lalu salin kolom `database_id` |
-| `ZONE_ID` *(opsional)* | Zone ID untuk `bits.co.id` | Auto-resolve dari API bila tidak disetel; disetel manual agar lebih stabil |
 
 > ⚠️ **`D1_DATABASE_ID` wajib disetel.** Workflow mengisi `database_id` di `wrangler.toml` dari secret ini (placeholder `"local-dev-id"` dipakai hanya untuk dev lokal). Tanpa secret ini, migrasi remote gagal dengan `Invalid property: databaseId => Invalid uuid`.
 
-> 🎯 **Custom domain `social.bits.co.id` dipasang otomatis** saat deploy. Workflow mengambil `ZONE_ID` dari akun (mencari zona `bits.co.id` via API Cloudflare, atau memakai secret `ZONE_ID` bila disetel) lalu mengganti placeholder di `wrangler.toml`. Pastikan zona `bits.co.id` berada pada akun yang sama dengan worker. Dengan kemampuan `Zone - Read` pada token, tidak perlu custom steps manual di dashboard.
+> 🎯 **Custom domain `social.bits.co.id` dipasang otomatis** saat deploy. `wrangler.toml` mendeklarasikan `[[routes]]` dengan `custom_domain = true`, sehingga wrangler me-resolve `zone_id` dari akun secara otomatis — tidak perlu secret/step `ZONE_ID`. Token API cukup mencantumkan permission `Zone - Workers Routes - Edit` pada zona `bits.co.id`.
 
 > ℹ️ `JWT_SECRET` dan `ENCRYPTION_KEY` sudah diset satu kali via `wrangler secret put` dan dipertahankan Cloudflare antar deploy — tidak perlu di-set di GitHub.
 
@@ -480,9 +479,11 @@ Buka tab **Actions → Deploy to Cloudflare → Run workflow** lalu pilih branch
 4. Redeploy
 
 ### Custom Domain
-Update `wrangler.toml`:
+Di `wrangler.toml`:
 ```toml
-route = "social.bits.co.id/*"
+[[routes]]
+pattern = "social.bits.co.id"
+custom_domain = true
 ```
 
 ### Database Backups
