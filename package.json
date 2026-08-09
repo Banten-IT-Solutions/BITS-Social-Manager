@@ -1,12 +1,12 @@
 {
   "name": "bits-social-manager",
   "version": "1.0.0",
-  "description": "BITS Social Manager — Cloudflare Workers social manager",
+  "description": "Secure social account manager for organizing project credentials across teams",
   "author": "Banten IT Solutions",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Banten-IT-Solutions/BITS-Social-Manager"
+    "url": "git+https://github.com/Banten-IT-Solutions/BITS-Social-Manager.git"
   },
   "type": "module",
   "private": true,

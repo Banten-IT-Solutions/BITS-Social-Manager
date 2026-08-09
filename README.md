@@ -2,7 +2,7 @@
   <h1>BITS Social Manager</h1>
   <p>
     <a href="https://social.bits.co.id">
-      <img src="https://img.shields.io/badge/status-online-success?style=flat" alt="social.bits.co.id online" />
+      <img src="https://img.shields.io/badge/social.bits.co.id-Online-success?style=flat" alt="social.bits.co.id Online" />
     </a>
   </p>
   <p>
