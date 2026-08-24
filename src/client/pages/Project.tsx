@@ -18,6 +18,14 @@ import { cn } from '../lib/utils';
 const ITEMS_PER_PAGE = 10;
 
 /**
+ * Primary CTA styling shared by page headers (matches Dashboard.tsx):
+ * violet accent, pill shape, glow shadow, 44px touch target,
+ * full-width on mobile.
+ */
+const HEADER_CTA =
+  'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
+
+/**
  * Build a public profile URL from a platform + account name/handle.
  * Returns null for platforms without a resolvable public URL.
  */
@@ -76,7 +84,7 @@ function AccountModal({ open, onClose, account, projectId, onSave }: {
   const [error, setError] = useState<string | null>(null);
   const isEdit = !!account;
 
-  const resolver = isEdit
+const resolver = isEdit
     ? zodResolver(editAccountSchema as unknown as typeof accountSchema)
     : zodResolver(accountSchema);
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<AccountForm>({
@@ -122,7 +130,7 @@ function AccountModal({ open, onClose, account, projectId, onSave }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-full">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit account' : 'Add social account'}</DialogTitle>
           <DialogDescription>
@@ -136,23 +144,24 @@ function AccountModal({ open, onClose, account, projectId, onSave }: {
               value={selectedPlatform}
               onChange={(value) => setValue('platform', value as AccountForm['platform'], { shouldValidate: true })}
               options={PLATFORMS.map(p => ({ value: p, label: p }))}
+              className="min-h-[44px]"
             />
           </FormField>
           <FormField label="Account name" error={errors.accountName?.message} required>
-            <Input placeholder="e.g. My Business Account" {...register('accountName')} />
+            <Input placeholder="e.g. My Business Account" {...register('accountName')} className="min-h-[44px]" />
           </FormField>
           <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
-            <Input placeholder="user@example.com or @handle" {...register('emailHandle')} />
+            <Input placeholder="user@example.com or @handle" {...register('emailHandle')} className="min-h-[44px]" />
           </FormField>
           <FormField
             label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
             error={errors.password?.message}
             required={!isEdit}
           >
-            <Input type="password" placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'} {...register('password')} />
+            <Input type="password" placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'} {...register('password')} className="min-h-[44px]" />
           </FormField>
           <FormField label="Notes" error={errors.notes?.message}>
-            <Textarea placeholder="Optional notes..." rows={2} {...register('notes')} />
+            <Textarea placeholder="Optional notes..." rows={2} {...register('notes')} className="min-h-[44px] py-3" />
           </FormField>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
@@ -370,31 +379,58 @@ export function ProjectPage() {
     setCurrentPage(1);
   }, [filterPlatform, searchQuery]);
 
-  return (
+return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <Link to="/dashboard" className="text-zinc-500 hover:text-zinc-300 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div className="flex-1 min-w-0">
-          {loading ? (
-            <div className="h-6 w-48 bg-zinc-800 rounded animate-pulse" />
-          ) : (
-            <>
-              <h1 className="text-xl font-semibold text-zinc-100 truncate">{project?.name}</h1>
-              {project?.description && (
-                <p className="text-sm text-zinc-500 mt-0.5 line-clamp-1">{project.description}</p>
-              )}
-            </>
-          )}
-        </div>
-        <Button onClick={() => setShowAdd(true)}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          Add account
-        </Button>
-      </div>
+      <header className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
+        {/* Subtle violet glow for depth */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent" />
 
-      {error && <Alert variant="destructive">{error}</Alert>}
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              to="/dashboard"
+              aria-label="Back to projects"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 motion-reduce:transition-none"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            </Link>
+
+            {loading ? (
+              <div className="min-w-0 flex-1 space-y-2" aria-hidden="true">
+                <div className="h-6 w-40 animate-pulse rounded-md bg-zinc-800 motion-reduce:animate-none" />
+                <div className="h-4 w-64 max-w-full animate-pulse rounded-md bg-zinc-800/70 motion-reduce:animate-none" />
+              </div>
+            ) : (
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="min-w-0 truncate text-2xl font-bold tracking-tight text-zinc-100">
+                    {project?.name}
+                  </h1>
+                  <Badge variant="secondary" className="shrink-0 gap-1">
+                    <Users className="h-3 w-3" aria-hidden="true" />
+                    {accounts.length} {accounts.length === 1 ? 'account' : 'accounts'}
+                  </Badge>
+                </div>
+                {project?.description && (
+                  <p className="mt-1 line-clamp-2 max-w-prose text-sm leading-relaxed text-zinc-400">
+                    {project.description}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Button onClick={() => setShowAdd(true)} className={HEADER_CTA}>
+            <span
+              aria-hidden="true"
+              className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-white/20"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </span>
+            Add account
+          </Button>
+        </div>
+      </header>
 
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-3">

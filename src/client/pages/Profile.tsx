@@ -71,10 +71,23 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl">
-      <div>
-        <h1 className="text-xl font-semibold text-zinc-100">Profile</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Manage your account settings</p>
-      </div>
+      <header className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
+        {/* Subtle violet glow for depth (matches Dashboard / Project headers) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent" />
+
+        <div className="relative flex items-center gap-3">
+          <div
+            aria-hidden="true"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-violet-500/20 bg-gradient-to-br from-violet-500/20 to-violet-600/10"
+          >
+            <User className="h-5 w-5 text-violet-400" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Profile</h1>
+            <p className="mt-1 text-sm text-zinc-400">Manage your account settings</p>
+          </div>
+        </div>
+      </header>
 
       {/* Avatar */}
       <div className="flex items-center gap-4">
@@ -105,10 +118,10 @@ export function ProfilePage() {
               {profileError && <Alert variant="destructive">{profileError}</Alert>}
               {profileSuccess && <Alert>Profile updated successfully.</Alert>}
               <FormField label="Name" error={profileForm.formState.errors.name?.message} required>
-                <Input {...profileForm.register('name')} />
+                <Input {...profileForm.register('name')} className="min-h-[44px]" />
               </FormField>
               <FormField label="Email" error={profileForm.formState.errors.email?.message} required>
-                <Input type="email" {...profileForm.register('email')} />
+                <Input type="email" {...profileForm.register('email')} className="min-h-[44px]" />
               </FormField>
               <Button type="submit" loading={profileForm.formState.isSubmitting}>
                 <Save className="h-4 w-4 mr-1.5" />
@@ -132,13 +145,13 @@ export function ProfilePage() {
               {pwError && <Alert variant="destructive">{pwError}</Alert>}
               {pwSuccess && <Alert>Password changed successfully.</Alert>}
               <FormField label="Current password" error={passwordForm.formState.errors.currentPassword?.message} required>
-                <Input type="password" autoComplete="current-password" {...passwordForm.register('currentPassword')} />
+                <Input type="password" autoComplete="current-password" {...passwordForm.register('currentPassword')} className="min-h-[44px]" />
               </FormField>
               <FormField label="New password" error={passwordForm.formState.errors.newPassword?.message} required>
-                <Input type="password" autoComplete="new-password" {...passwordForm.register('newPassword')} />
+                <Input type="password" autoComplete="new-password" {...passwordForm.register('newPassword')} className="min-h-[44px]" />
               </FormField>
               <FormField label="Confirm new password" error={passwordForm.formState.errors.confirmPassword?.message} required>
-                <Input type="password" autoComplete="new-password" {...passwordForm.register('confirmPassword')} />
+                <Input type="password" autoComplete="new-password" {...passwordForm.register('confirmPassword')} className="min-h-[44px]" />
               </FormField>
               <Button type="submit" loading={passwordForm.formState.isSubmitting}>
                 <Lock className="h-4 w-4 mr-1.5" />
