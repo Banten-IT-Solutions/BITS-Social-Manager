@@ -47,22 +47,43 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         run: |
+          fail=0
           for var in D1_DATABASE_ID CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID JWT_SECRET ENCRYPTION_KEY; do
             if [ -z "${!var}" ]; then
               echo "::error::$var secret tidak ter-set. Deploy dibatalkan."
-              exit 1
+              fail=1
             fi
           done
-          echo "Semua secret yang dibutuhkan tersedia."
+          if [ "$fail" = "1" ]; then
+            exit 1
+          fi
 
-      - name: Sync Worker secrets from GitHub secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-        run: |
-          printf '%s' "$JWT_SECRET" | npx wrangler secret put JWT_SECRET
-          printf '%s' "$ENCRYPTION_KEY" | npx wrangler secret put ENCRYPTION_KEY
+          # ENCRYPTION_KEY wajib 64 karakter hex (32 byte) sesuai kontrak
+          # src/worker/utils/crypto.ts. Key salah format HARUS gagal di sini,
+          # sebelum sempat mengenkripsi data produksi dengan key yang rusak.
+          if ! [[ "$ENCRYPTION_KEY" =~ ^[0-9a-fA-F]{64}$ ]]; then
+            echo "::error::ENCRYPTION_KEY harus 64 karakter hex (32 byte). Generate dengan: openssl rand -hex 32"
+            exit 1
+          fi
+
+          # JWT_SECRET minimal 32 karakter (HMAC-SHA256 signing key).
+          if [ "${#JWT_SECRET}" -lt 32 ]; then
+            echo "::error::JWT_SECRET minimal 32 karakter. Generate dengan: openssl rand -base64 48"
+            exit 1
+          fi
+
+          echo "Semua secret yang dibutuhkan tersedia dan formatnya valid."
+
+      # PENTING: ENCRYPTION_KEY dan JWT_SECRET TIDAK di-sync dari CI ke
+      # Cloudflare pada setiap deploy. Secret enkripsi adalah infrastruktur
+      # immutable — menimpanya diam-diam membuat semua password yang sudah
+      # terenkripsi tidak bisa didekripsi lagi (AES-GCM tanpa recovery).
+      #
+      # Set sekali manual oleh admin dari mesin lokal:
+      #   npx wrangler secret put ENCRYPTION_KEY   # openssl rand -hex 32
+      #   npx wrangler secret put JWT_SECRET       # openssl rand -base64 48
+      #
+      # Rotasi hanya boleh dilakukan secara sadar dengan re-enkripsi data.
 
       - name: Inject D1 database ID into wrangler.toml
         env:
@@ -72,7 +93,7 @@ jobs:
           echo "Sanity check:"
           grep -E "database_id|pattern" wrangler.toml
 
-      - name: Deploy Worker & apply D1 migrations & sync secrets
+      - name: Deploy Worker & apply D1 migrations
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
