@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { socialAccounts, projects } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
-import { encrypt, decrypt } from '../utils/crypto';
+import { encrypt, decrypt, DecryptError } from '../utils/crypto';
 import type { Env, Variables } from '../index';
 
 const accountsRouter = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -87,7 +87,21 @@ accountsRouter.get('/:id', async (c) => {
   }
 
   // Decrypt password for single-account view (reveal feature)
-  const password = await decrypt(account.passwordEncrypted, c.env.ENCRYPTION_KEY);
+  let password: string;
+  try {
+    password = await decrypt(account.passwordEncrypted, c.env.ENCRYPTION_KEY);
+  } catch (err) {
+    if (err instanceof DecryptError) {
+      // Stored value is undecryptable (rotated key, corrupted/legacy data) —
+      // actionable for the user, no internal details leaked.
+      console.error(`[accounts] decrypt failed for account ${id}: ${err.message}`);
+      return c.json({
+        error: 'Stored password could not be decrypted. The encryption key may have changed or the stored value is corrupted — edit this account and re-save the password.',
+      }, 422);
+    }
+    // Anything else is a server/key misconfiguration — rethrow to the global JSON error handler.
+    throw err;
+  }
   c.header('Cache-Control', 'no-store');
   c.header('Pragma', 'no-cache');
   return c.json({ account: { ...account, password, passwordEncrypted: undefined } });

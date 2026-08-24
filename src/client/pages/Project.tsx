@@ -169,15 +169,19 @@ function PasswordReveal({ accountId }: { accountId: string }) {
   const [password, setPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const reveal = async () => {
     if (show) { setShow(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const res = await api.accounts.get(accountId);
       setPassword(res.account.password ?? null);
       setShow(true);
-    } catch { /* ignore */ } finally {
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to reveal password');
+    } finally {
       setLoading(false);
     }
   };
@@ -208,7 +212,14 @@ function PasswordReveal({ accountId }: { accountId: string }) {
 
   if (!show) {
     return (
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={reveal} disabled={loading} title="Show password">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn('h-8 w-8', error && 'text-red-400 hover:text-red-300')}
+          onClick={reveal}
+          disabled={loading}
+          title={error ?? 'Show password'}
+        >
           {loading ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" /> : <Eye className="h-4 w-4" />}
         </Button>
       );

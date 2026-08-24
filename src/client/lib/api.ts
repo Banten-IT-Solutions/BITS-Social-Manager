@@ -15,10 +15,16 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
-  const data = await res.json() as Record<string, unknown>;
+
+  // Parse defensively: error responses (or a broken gateway) may not be JSON.
+  const text = await res.text();
+  let data: Record<string, unknown> | undefined;
+  try {
+    data = text ? JSON.parse(text) as Record<string, unknown> : undefined;
+  } catch { /* non-JSON body — fall through */ }
 
   if (!res.ok) {
-    throw new Error((data['error'] as string | undefined) ?? `HTTP ${res.status}`);
+    throw new Error((data?.['error'] as string | undefined) ?? `HTTP ${res.status}`);
   }
   return data as T;
 }

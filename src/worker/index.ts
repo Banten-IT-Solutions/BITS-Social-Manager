@@ -22,6 +22,13 @@ export interface Variables {
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+// Global error handler — never leak a raw (non-JSON) 500 to clients.
+// Details go to Worker logs only; the response body stays generic.
+app.onError((err, c) => {
+  console.error(`[worker] unhandled ${c.req.method} ${c.req.path}:`, err instanceof Error ? err.stack : err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
+
 // Security headers
 app.use('*', secureHeaders());
 
