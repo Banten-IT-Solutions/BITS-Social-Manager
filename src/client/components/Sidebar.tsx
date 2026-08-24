@@ -1,95 +1,106 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutGrid, User, LogOut, Shield, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { useAuthStore } from '../store/auth';
-import { api } from '../lib/api';
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutGrid, User, LogOut, Shield } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useLogout } from '../hooks/useLogout';
 import { cn } from '../lib/utils';
 import { Tooltip } from './ui';
 
-const navItems = [
+interface NavItem {
+  label: string;
+  icon: LucideIcon;
+  /** Route path — when present the item renders as a link, otherwise as an action button. */
+  to?: string;
+  onSelect?: () => void;
+}
+
+// Desktop sidebar navigation entries.
+const navItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutGrid, label: 'Projects' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
-export function Sidebar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, clearAuth } = useAuthStore();
-  const [mobileOpen, setMobileOpen] = useState(false);
+interface SidebarContentProps {
+  items: NavItem[];
+  footerItems: NavItem[];
+  pathname: string;
+}
 
-  const handleLogout = async () => {
-    try { await api.auth.logout(); } catch { /* ignore */ }
-    clearAuth();
-    navigate('/login');
+function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
+  const rowClass = (...extra: Array<string | undefined>) =>
+    cn(
+      'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-colors motion-reduce:transition-none',
+      'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400',
+      ...extra
+    );
+
+  const renderControl = (item: NavItem, extraClassName?: string) => {
+    const Icon = item.icon;
+    const active = item.to !== undefined && pathname.startsWith(item.to);
+    const className = rowClass(
+      active ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200',
+      extraClassName
+    );
+    const children = <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />;
+    if (item.to) {
+      return (
+        <Link key={item.label} to={item.to} aria-current={active ? 'page' : undefined} className={className}>
+          {children}
+        </Link>
+      );
+    }
+    return (
+      <button key={item.label} type="button" onClick={item.onSelect} className={className}>
+        {children}
+      </button>
+    );
   };
 
-  const SidebarContent = () => (
+  return (
     <div className="flex h-full flex-col bg-zinc-950 border-r border-zinc-800">
-      {/* Logo - Shield Icon */}
-      <div className="flex h-14 items-center justify-center border-b border-zinc-800">
+      {/* Desktop header - centered logo tile */}
+      <div className="flex h-14 shrink-0 items-center justify-center border-b border-zinc-800">
         <Tooltip content="BITS Social Manager" side="right">
-          <Link to="/dashboard" className="flex items-center justify-center w-10 h-10 rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors">
-            <Shield className="h-5 w-5 text-white" />
+          <Link
+            to="/dashboard"
+            className="flex items-center justify-center w-10 h-10 rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-400"
+          >
+            <Shield className="h-5 w-5 text-white" aria-hidden="true" />
           </Link>
         </Tooltip>
       </div>
 
-      {/* Nav - Icons Only */}
+      {/* Nav */}
       <nav className="flex-1 flex flex-col items-center gap-2 p-3">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <Tooltip key={to} content={label} side="right">
-            <Link
-              to={to}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium transition-colors',
-                location.pathname.startsWith(to)
-                  ? 'bg-zinc-800 text-zinc-100'
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              )}
-            >
-              <Icon className="h-5 w-5" />
-            </Link>
+        {items.map((item) => (
+          <Tooltip key={item.label} content={item.label} side="right">
+            {renderControl(item)}
           </Tooltip>
         ))}
       </nav>
 
-      {/* Logout Only */}
+      {/* Footer actions */}
       <div className="border-t border-zinc-800 p-3 flex flex-col items-center">
-        <Tooltip content="Sign out" side="right">
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-400 hover:bg-zinc-800/50 hover:text-red-400 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
-        </Tooltip>
+        {footerItems.map((item) => (
+          <Tooltip key={item.label} content={item.label} side="right">
+            {renderControl(item, 'hover:text-red-400')}
+          </Tooltip>
+        ))}
       </div>
     </div>
   );
+}
 
+export function Sidebar() {
+  const location = useLocation();
+  const handleLogout = useLogout();
+
+  // Footer actions (single definition).
+  const footerItems: NavItem[] = [{ label: 'Sign out', icon: LogOut, onSelect: handleLogout }];
+
+  // Desktop sidebar - Ultra compact
   return (
-    <>
-      {/* Mobile toggle */}
-      <button
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-      </button>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="w-16 h-full"><SidebarContent /></div>
-          <div className="flex-1 bg-black/50" onClick={() => setMobileOpen(false)} />
-        </div>
-      )}
-
-      {/* Desktop sidebar - Ultra compact */}
-      <div className="hidden lg:flex lg:w-16 h-screen flex-col fixed left-0 top-0">
-        <SidebarContent />
-      </div>
-    </>
+    <div className="hidden lg:flex lg:w-16 h-screen flex-col fixed left-0 top-0">
+      <SidebarContent items={navItems} footerItems={footerItems} pathname={location.pathname} />
+    </div>
   );
 }
