@@ -189,10 +189,13 @@ Deploy otomatis: push ke `main` → GitHub Actions generate `wrangler.jsonc` dar
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Run Vite + Wrangler dev |
-| `npm run build` | Build frontend assets |
+| `npm run dev` | Run Vite + Cloudflare Worker (single server via @cloudflare/vite-plugin) |
+| `npm run build` | Build frontend assets (`cf:config` + Vite) |
 | `npm run preview` | Preview frontend build |
-| `npm run deploy` | Build then deploy Worker |
+| `npm run deploy` | Build then deploy Worker (`bits-social-manager`) |
+| `npm run cf:config` | Generate `wrangler.jsonc` dari template |
+| `npm run db:migrate:local` | Apply D1 migrations (local) |
+| `npm run db:migrate:remote` | Apply D1 migrations (remote) |
 | `npm run test` | Run unit tests |
 | `npm run test:e2e` | Run Playwright tests |
 | `npm run type-check` | Run TypeScript checks |
@@ -205,40 +208,15 @@ Deploy otomatis: push ke `main` → GitHub Actions generate `wrangler.jsonc` dar
 
 ---
 
-## 🔄 Migrasi dari nama lama (social-manager → bits-social-manager)
+## ✅ Status Deploy (2026-08-27)
 
-Jika Anda sudah deploy dengan nama lama `social-manager` / `social-manager-db`, lakukan rename sekali:
+- **Worker:** `bits-social-manager` (`ea4f6ea`) — live di `https://social.bits.co.id`
+- **D1:** `bits-social-manager` (`ea5a2ea6-6184-45da-87ed-f55404ae51cc`) — 1 user, 11 projects, 32 accounts (migrated dari `social-manager-db`)
+- **Secrets:** `JWT_SECRET` + `ENCRYPTION_KEY` (real production, migrated ke worker baru)
+- **Deploy:** `main` → GitHub Actions `Deploy to Cloudflare` (template-driven, `wrangler.jsonc` generated dari Secrets)
+- **Legacy:** `social-manager` (worker) + `social-manager-db` (D1) **sudah dihapus** (`wrangler delete`)
 
-```bash
-# 1. Buat D1 baru dengan nama konsisten
-wrangler d1 create bits-social-manager
-# → salin database_id baru ke .env dan GitHub Secrets D1_DATABASE_ID/D1_DATABASE_NAME
-
-# 2. Migrasi data lama → baru (jika ada data produksi)
-wrangler d1 export social-manager-db --remote --output dump.sql
-wrangler d1 execute bits-social-manager --remote --file dump.sql
-# atau manual: copy via SQL dump & import
-
-# 3. Update GitHub Secrets (Settings → Secrets and variables → Actions)
-# WORKER_NAME=bits-social-manager
-# D1_DATABASE_NAME=bits-social-manager
-# D1_DATABASE_ID=<id baru>
-# APP_URL=https://social.bits.co.id
-# APP_DOMAIN=social.bits.co.id
-
-# 4. Re-put secrets ke worker baru
- echo "$JWT_SECRET" | wrangler secret put JWT_SECRET --name bits-social-manager
- echo "$ENCRYPTION_KEY" | wrangler secret put ENCRYPTION_KEY --name bits-social-manager
-
-# 5. Deploy ulang (push ke main atau manual)
-npm run deploy
-
-# 6. Setelah verifikasi social.bits.co.id OK, hapus worker & D1 lama (opsional)
-# wrangler delete --name social-manager
-# wrangler d1 delete social-manager-db
-```
-
-> **Catatan:** D1 `database_name` tidak bisa di-rename in-place di Cloudflare — harus create baru. Worker `name` juga create baru; custom domain akan otomatis pindah ke worker baru saat deploy (karena `routes` sama).
+> History rename `social-manager` → `bits-social-manager` (konsisten ala BITS-Nota) sudah selesai — D1 tidak bisa rename in-place, jadi create baru + `wrangler d1 export` → `wrangler d1 execute`.
 
 ---
 
