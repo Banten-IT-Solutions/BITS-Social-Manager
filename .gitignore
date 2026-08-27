@@ -1,14 +1,28 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build outputs
 dist/
-.wrangler/
+.open-next/
 
-# Environment files
-.env
-.env.local
+# Wrangler / Cloudflare local state
+.wrangler/
 .dev.vars
+*.local
+# Generated dari wrangler.template.jsonc oleh `npm run cf:config`
+wrangler.jsonc
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
 
 # Logs
 *.log
@@ -16,16 +30,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# Editor directories and files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
 
 # Testing
 coverage/

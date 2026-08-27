@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // ── TEMPLATE — jangan deploy file ini langsung ──────────────────────────
+  // `npm run cf:config` men-generate wrangler.jsonc (gitignored) dengan
+  // mensubstitusi semua placeholder dari:
+  //   - lokal : file .env di root project (salin dari .env.example)
+  //   - CI    : environment job, diisi dari GitHub Secrets
+  "name": "${WORKER_NAME}",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // SPA static assets — gratis & tak dihitung kuota request Workers
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+
+  // D1 (free tier: 5GB, 5jt rows read/hari)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "${D1_DATABASE_NAME}",
+      "database_id": "${D1_DATABASE_ID}",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "vars": {
+    "APP_URL": "${APP_URL}",
+    "ENVIRONMENT": "production"
+  },
+
+  // Custom domain — zone harus aktif di Cloudflare
+  "routes": [{ "pattern": "${APP_DOMAIN}", "custom_domain": true }],
+
+  "observability": { "enabled": true }
+}

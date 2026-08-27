@@ -11,15 +11,19 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"vite\" \"wrangler dev --port 8787\"",
-    "build": "vite build",
+    "cf:config": "node scripts/gen-wrangler.mjs",
+    "dev": "npm run cf:config && vite",
+    "build": "npm run cf:config && vite build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "db:migrate:local": "wrangler d1 migrations apply social-manager-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply social-manager-db",
+    "cf:typegen": "wrangler types",
+    "db:migrate:local": "npm run cf:config && { [ -f .env ] && . ./.env || true; } && { [ -n \"$D1_DATABASE_NAME\" ] || { echo 'D1_DATABASE_NAME belum diset' && exit 1; }; } && wrangler d1 migrations apply \"$D1_DATABASE_NAME\" --local",
+    "db:migrate:remote": "npm run cf:config && { [ -f .env ] && . ./.env || true; } && { [ -n \"$D1_DATABASE_NAME\" ] || { echo 'D1_DATABASE_NAME belum diset' && exit 1; }; } && wrangler d1 migrations apply \"$D1_DATABASE_NAME\" --remote",
+    "db:generate": "drizzle-kit generate",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "type-check": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit"
+    "type-check": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "check": "tsc --noEmit && tsc -p tsconfig.worker.json --noEmit"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.0",
@@ -38,6 +42,7 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.54.0",
     "@cloudflare/workers-types": "^5.20260801.1",
     "@playwright/test": "^1.52.0",
     "@types/bcryptjs": "^2.4.6",
@@ -47,6 +52,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.4",
+    "drizzle-kit": "^0.31.10",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
