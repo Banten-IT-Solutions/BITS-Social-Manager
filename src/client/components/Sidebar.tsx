@@ -37,13 +37,20 @@ function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
     const Icon = item.icon;
     const active = item.to !== undefined && pathname.startsWith(item.to);
     const className = rowClass(
-      active ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200',
+      active
+        ? 'bg-zinc-800 text-zinc-100'
+        : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200',
       extraClassName
     );
     const children = <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />;
     if (item.to) {
       return (
-        <Link key={item.label} to={item.to} aria-current={active ? 'page' : undefined} className={className}>
+        <Link
+          key={item.label}
+          to={item.to}
+          aria-current={active ? 'page' : undefined}
+          className={className}
+        >
           {children}
         </Link>
       );
@@ -71,7 +78,7 @@ function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
 
       {/* Nav */}
       <nav className="flex-1 flex flex-col items-center gap-2 p-3">
-        {items.map((item) => (
+        {items.map(item => (
           <Tooltip key={item.label} content={item.label} side="right">
             {renderControl(item)}
           </Tooltip>
@@ -80,7 +87,7 @@ function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
 
       {/* Footer actions */}
       <div className="border-t border-zinc-800 p-3 flex flex-col items-center">
-        {footerItems.map((item) => (
+        {footerItems.map(item => (
           <Tooltip key={item.label} content={item.label} side="right">
             {renderControl(item, 'hover:text-red-400')}
           </Tooltip>

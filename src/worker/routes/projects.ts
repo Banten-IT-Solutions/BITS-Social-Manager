@@ -17,14 +17,14 @@ const createSchema = z.object({
 
 const updateSchema = createSchema.partial();
 
-projectsRouter.get('/', async (c) => {
+projectsRouter.get('/', async c => {
   const userId = c.get('userId');
   const db = getDb(c.env.DB);
   const list = await db.select().from(projects).where(eq(projects.userId, userId)).all();
   return c.json({ projects: list });
 });
 
-projectsRouter.post('/', zValidator('json', createSchema), async (c) => {
+projectsRouter.post('/', zValidator('json', createSchema), async c => {
   const userId = c.get('userId');
   const { name, description } = c.req.valid('json');
   const db = getDb(c.env.DB);
@@ -34,35 +34,51 @@ projectsRouter.post('/', zValidator('json', createSchema), async (c) => {
   return c.json({ project }, 201);
 });
 
-projectsRouter.get('/:id', async (c) => {
+projectsRouter.get('/:id', async c => {
   const userId = c.get('userId');
   const { id } = c.req.param();
   const db = getDb(c.env.DB);
-  const project = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId))).get();
+  const project = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), eq(projects.userId, userId)))
+    .get();
   if (!project) return c.json({ error: 'Not found' }, 404);
   return c.json({ project });
 });
 
-projectsRouter.put('/:id', zValidator('json', updateSchema), async (c) => {
+projectsRouter.put('/:id', zValidator('json', updateSchema), async c => {
   const userId = c.get('userId');
   const { id } = c.req.param();
   const data = c.req.valid('json');
   const db = getDb(c.env.DB);
 
-  const project = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId))).get();
+  const project = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), eq(projects.userId, userId)))
+    .get();
   if (!project) return c.json({ error: 'Not found' }, 404);
 
-  await db.update(projects).set({ ...data, updatedAt: new Date() }).where(eq(projects.id, id)).run();
+  await db
+    .update(projects)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(projects.id, id))
+    .run();
   const updated = await db.select().from(projects).where(eq(projects.id, id)).get();
   return c.json({ project: updated });
 });
 
-projectsRouter.delete('/:id', async (c) => {
+projectsRouter.delete('/:id', async c => {
   const userId = c.get('userId');
   const { id } = c.req.param();
   const db = getDb(c.env.DB);
 
-  const project = await db.select().from(projects).where(and(eq(projects.id, id), eq(projects.userId, userId))).get();
+  const project = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), eq(projects.userId, userId)))
+    .get();
   if (!project) return c.json({ error: 'Not found' }, 404);
 
   await db.delete(projects).where(eq(projects.id, id)).run();

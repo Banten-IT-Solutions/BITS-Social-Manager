@@ -45,15 +45,15 @@ describe('crypto utilities', () => {
   // problems → HTTP 422) while key misconfiguration stays a plain Error (→ 500).
   it('rejects missing ENCRYPTION_KEY with a clear error', async () => {
     const cipher = await encrypt('secret', KEY);
-    await expect(decrypt(cipher, undefined as unknown as string))
-      .rejects.toThrow('ENCRYPTION_KEY is not configured');
+    await expect(decrypt(cipher, undefined as unknown as string)).rejects.toThrow(
+      'ENCRYPTION_KEY is not configured'
+    );
   });
 
   it('rejects non-hex ENCRYPTION_KEY instead of silently zero-filling', async () => {
     const cipher = await encrypt('secret', KEY);
     // 'z'.repeat(64) previously parsed to NaN bytes (silently coerced to 0x00)
-    await expect(decrypt(cipher, 'z'.repeat(64)))
-      .rejects.toThrow(/valid hex/);
+    await expect(decrypt(cipher, 'z'.repeat(64))).rejects.toThrow(/valid hex/);
     await expect(encrypt('secret', 'zz')).rejects.toThrow(/valid hex/);
   });
 
@@ -70,8 +70,10 @@ describe('crypto utilities', () => {
   it('wrong key rejects with DecryptError and preserves the cause', async () => {
     const cipher = await encrypt('secret', KEY);
     const err: DecryptError = await decrypt(cipher, 'b'.repeat(64)).then(
-      () => { throw new Error('expected rejection'); },
-      (e: unknown) => e as DecryptError,
+      () => {
+        throw new Error('expected rejection');
+      },
+      (e: unknown) => e as DecryptError
     );
     expect(err).toBeInstanceOf(DecryptError);
     expect(err.cause).toBeDefined();

@@ -25,11 +25,15 @@ const loginSchema = z.object({
 // 10 attempts per 15 minutes
 const limiter = rateLimit(10, 15 * 60 * 1000);
 
-auth.post('/register', limiter as any, zValidator('json', registerSchema), async (c) => {
+auth.post('/register', limiter as any, zValidator('json', registerSchema), async c => {
   const { name, email, password } = c.req.valid('json');
   const db = getDb(c.env.DB);
 
-  const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+  const existing = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email))
+    .get();
   if (existing) return c.json({ error: 'Email already registered' }, 409);
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -40,7 +44,7 @@ auth.post('/register', limiter as any, zValidator('json', registerSchema), async
   return c.json({ token, user: { id, name, email } }, 201);
 });
 
-auth.post('/login', limiter as any, zValidator('json', loginSchema), async (c) => {
+auth.post('/login', limiter as any, zValidator('json', loginSchema), async c => {
   const { email, password } = c.req.valid('json');
   const db = getDb(c.env.DB);
 
@@ -50,10 +54,13 @@ auth.post('/login', limiter as any, zValidator('json', loginSchema), async (c) =
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return c.json({ error: 'Invalid credentials' }, 401);
 
-  const token = await signJWT({ sub: user.id, email: user.email, name: user.name }, c.env.JWT_SECRET);
+  const token = await signJWT(
+    { sub: user.id, email: user.email, name: user.name },
+    c.env.JWT_SECRET
+  );
   return c.json({ token, user: { id: user.id, name: user.name, email: user.email } });
 });
 
-auth.post('/logout', (c) => c.json({ success: true }));
+auth.post('/logout', c => c.json({ success: true }));
 
 export default auth;

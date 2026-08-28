@@ -1,6 +1,20 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Plus, ArrowLeft, Pencil, Trash2, Eye, EyeOff, Copy, Check, Users, Search, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import {
+  Plus,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+  Users,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,9 +23,20 @@ import type { Project, SocialAccount } from '../lib/types';
 import { PLATFORMS, type Platform } from '../lib/types';
 import { PlatformIcon, PLATFORM_COLORS, PLATFORM_BG } from '../components/PlatformIcon';
 import {
-  Button, Input, Textarea, CustomSelect, FormField, Alert,
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-  Badge, Separator,
+  Button,
+  Input,
+  Textarea,
+  CustomSelect,
+  FormField,
+  Alert,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  Badge,
+  Separator,
 } from '../components/ui';
 import { cn } from '../lib/utils';
 
@@ -74,7 +99,13 @@ const editAccountSchema = accountSchema.extend({ password: z.string().max(1000).
 type AccountForm = z.infer<typeof accountSchema>;
 type EditAccountForm = z.infer<typeof editAccountSchema>;
 
-function AccountModal({ open, onClose, account, projectId, onSave }: {
+function AccountModal({
+  open,
+  onClose,
+  account,
+  projectId,
+  onSave,
+}: {
   open: boolean;
   onClose: () => void;
   account?: SocialAccount | null;
@@ -84,10 +115,17 @@ function AccountModal({ open, onClose, account, projectId, onSave }: {
   const [error, setError] = useState<string | null>(null);
   const isEdit = !!account;
 
-const resolver = isEdit
+  const resolver = isEdit
     ? zodResolver(editAccountSchema as unknown as typeof accountSchema)
     : zodResolver(accountSchema);
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<AccountForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<AccountForm>({
     resolver,
     defaultValues: {
       platform: account?.platform ?? 'Gmail',
@@ -142,30 +180,54 @@ const resolver = isEdit
           <FormField label="Platform" error={errors.platform?.message} required>
             <CustomSelect
               value={selectedPlatform}
-              onChange={(value) => setValue('platform', value as AccountForm['platform'], { shouldValidate: true })}
+              onChange={value =>
+                setValue('platform', value as AccountForm['platform'], { shouldValidate: true })
+              }
               options={PLATFORMS.map(p => ({ value: p, label: p }))}
               className="min-h-[44px]"
             />
           </FormField>
           <FormField label="Account name" error={errors.accountName?.message} required>
-            <Input placeholder="e.g. My Business Account" {...register('accountName')} className="min-h-[44px]" />
+            <Input
+              placeholder="e.g. My Business Account"
+              {...register('accountName')}
+              className="min-h-[44px]"
+            />
           </FormField>
           <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
-            <Input placeholder="user@example.com or @handle" {...register('emailHandle')} className="min-h-[44px]" />
+            <Input
+              placeholder="user@example.com or @handle"
+              {...register('emailHandle')}
+              className="min-h-[44px]"
+            />
           </FormField>
           <FormField
             label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
             error={errors.password?.message}
             required={!isEdit}
           >
-            <Input type="password" placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'} {...register('password')} className="min-h-[44px]" />
+            <Input
+              type="password"
+              placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'}
+              {...register('password')}
+              className="min-h-[44px]"
+            />
           </FormField>
           <FormField label="Notes" error={errors.notes?.message}>
-            <Textarea placeholder="Optional notes..." rows={2} {...register('notes')} className="min-h-[44px] py-3" />
+            <Textarea
+              placeholder="Optional notes..."
+              rows={2}
+              {...register('notes')}
+              className="min-h-[44px] py-3"
+            />
           </FormField>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" loading={isSubmitting}>{isEdit ? 'Save changes' : 'Add account'}</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={isSubmitting}>
+              {isEdit ? 'Save changes' : 'Add account'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -181,7 +243,10 @@ function PasswordReveal({ accountId }: { accountId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const reveal = async () => {
-    if (show) { setShow(false); return; }
+    if (show) {
+      setShow(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -216,22 +281,28 @@ function PasswordReveal({ accountId }: { accountId: string }) {
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch { /* ignore clipboard failure */ }
+    } catch {
+      /* ignore clipboard failure */
+    }
   };
 
   if (!show) {
     return (
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn('h-8 w-8', error && 'text-red-400 hover:text-red-300')}
-          onClick={reveal}
-          disabled={loading}
-          title={error ?? 'Show password'}
-        >
-          {loading ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" /> : <Eye className="h-4 w-4" />}
-        </Button>
-      );
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn('h-8 w-8', error && 'text-red-400 hover:text-red-300')}
+        onClick={reveal}
+        disabled={loading}
+        title={error ?? 'Show password'}
+      >
+        {loading ? (
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" />
+        ) : (
+          <Eye className="h-4 w-4" />
+        )}
+      </Button>
+    );
   }
 
   return (
@@ -242,14 +313,25 @@ function PasswordReveal({ accountId }: { accountId: string }) {
       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copy} title="Copy password">
         {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-400" onClick={() => setShow(false)} title="Hide password">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:text-red-400"
+        onClick={() => setShow(false)}
+        title="Hide password"
+      >
         <EyeOff className="h-4 w-4" />
       </Button>
     </div>
   );
 }
 
-function DeleteAccountModal({ open, onClose, account, onDeleted }: {
+function DeleteAccountModal({
+  open,
+  onClose,
+  account,
+  onDeleted,
+}: {
   open: boolean;
   onClose: () => void;
   account: SocialAccount | null;
@@ -279,13 +361,18 @@ function DeleteAccountModal({ open, onClose, account, onDeleted }: {
         <DialogHeader>
           <DialogTitle>Delete account</DialogTitle>
           <DialogDescription>
-            Delete <strong className="text-zinc-200">{account?.accountName}</strong> ({account?.platform})?
+            Delete <strong className="text-zinc-200">{account?.accountName}</strong> (
+            {account?.platform})?
           </DialogDescription>
         </DialogHeader>
         {error && <Alert variant="destructive">{error}</Alert>}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="destructive" loading={loading} onClick={handleDelete}>Delete</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="destructive" loading={loading} onClick={handleDelete}>
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -310,10 +397,7 @@ export function ProjectPage() {
     setLoading(true);
     setError(null);
     try {
-      const [projRes, accRes] = await Promise.all([
-        api.projects.get(id),
-        api.accounts.list(id),
-      ]);
+      const [projRes, accRes] = await Promise.all([api.projects.get(id), api.accounts.list(id)]);
       setProject(projRes.project);
       setAccounts(accRes.accounts);
     } catch (e) {
@@ -323,7 +407,9 @@ export function ProjectPage() {
     }
   }, [id]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSave = (a: SocialAccount) => {
     setAccounts(prev => {
@@ -346,23 +432,24 @@ export function ProjectPage() {
   // Filter and search logic
   const filteredAccounts = useMemo(() => {
     let result = accounts;
-    
+
     // Filter by platform
     if (filterPlatform !== 'all') {
       result = result.filter(a => a.platform === filterPlatform);
     }
-    
+
     // Search by account name, email, or platform
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(a => 
-        a.accountName.toLowerCase().includes(query) ||
-        a.emailHandle.toLowerCase().includes(query) ||
-        a.platform.toLowerCase().includes(query) ||
-        (a.notes?.toLowerCase().includes(query) ?? false)
+      result = result.filter(
+        a =>
+          a.accountName.toLowerCase().includes(query) ||
+          a.emailHandle.toLowerCase().includes(query) ||
+          a.platform.toLowerCase().includes(query) ||
+          (a.notes?.toLowerCase().includes(query) ?? false)
       );
     }
-    
+
     return result;
   }, [accounts, filterPlatform, searchQuery]);
 
@@ -379,11 +466,14 @@ export function ProjectPage() {
     setCurrentPage(1);
   }, [filterPlatform, searchQuery]);
 
-return (
+  return (
     <div className="space-y-6 animate-fade-in">
       <header className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
         {/* Subtle violet glow for depth */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent"
+        />
 
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
@@ -440,7 +530,7 @@ return (
           <Input
             placeholder="Search accounts..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="pl-9"
           />
         </div>
@@ -449,10 +539,10 @@ return (
         {platforms.length > 0 && (
           <CustomSelect
             value={filterPlatform}
-            onChange={(value) => setFilterPlatform(value)}
+            onChange={value => setFilterPlatform(value)}
             options={[
               { value: 'all', label: `All Platforms (${accounts.length})` },
-              ...platforms.map(p => ({ value: p, label: p }))
+              ...platforms.map(p => ({ value: p, label: p })),
             ]}
             className="sm:w-48"
           />
@@ -461,13 +551,22 @@ return (
 
       {loading ? (
         <div className="space-y-2">
-          {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse" />)}
+          {[1, 2, 3].map(i => (
+            <div
+              key={i}
+              className="h-16 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse"
+            />
+          ))}
         </div>
       ) : filteredAccounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
           <Users className="h-10 w-10 text-zinc-700" />
           <p className="text-sm text-zinc-500">
-            {accounts.length === 0 ? 'No accounts yet' : searchQuery ? 'No accounts found' : 'No accounts match filter'}
+            {accounts.length === 0
+              ? 'No accounts yet'
+              : searchQuery
+                ? 'No accounts found'
+                : 'No accounts match filter'}
           </p>
           {accounts.length === 0 && (
             <Button variant="outline" onClick={() => setShowAdd(true)}>
@@ -486,7 +585,12 @@ return (
                 className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-900/50 transition-all"
               >
                 {/* Platform icon */}
-                <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg shrink-0', PLATFORM_BG[account.platform as Platform])}>
+                <div
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-lg shrink-0',
+                    PLATFORM_BG[account.platform as Platform]
+                  )}
+                >
                   <PlatformIcon
                     platform={account.platform as Platform}
                     className={cn('h-5 w-5', PLATFORM_COLORS[account.platform as Platform])}
@@ -496,11 +600,17 @@ return (
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-100 truncate">{account.accountName}</span>
-                    <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0">{account.platform}</Badge>
+                    <span className="text-sm font-medium text-zinc-100 truncate">
+                      {account.accountName}
+                    </span>
+                    <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0">
+                      {account.platform}
+                    </Badge>
                   </div>
                   <p className="text-xs text-zinc-500 truncate mt-0.5">{account.emailHandle}</p>
-                  {account.notes && <p className="text-[11px] text-zinc-600 truncate mt-0.5">{account.notes}</p>}
+                  {account.notes && (
+                    <p className="text-[11px] text-zinc-600 truncate mt-0.5">{account.notes}</p>
+                  )}
                 </div>
 
                 {/* Password reveal */}
@@ -512,7 +622,9 @@ return (
                 <div className="flex items-center gap-1 shrink-0">
                   {buildProfileUrl(account.platform as Platform, account.accountName) && (
                     <a
-                      href={buildProfileUrl(account.platform as Platform, account.accountName) ?? '#'}
+                      href={
+                        buildProfileUrl(account.platform as Platform, account.accountName) ?? '#'
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       title={`Open ${account.platform} profile`}
@@ -556,12 +668,12 @@ return (
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              
+
               <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <Button
                     key={page}
-                    variant={currentPage === page ? "default" : "ghost"}
+                    variant={currentPage === page ? 'default' : 'ghost'}
                     size="icon"
                     onClick={() => setCurrentPage(page)}
                     className="h-8 w-8"
@@ -587,7 +699,10 @@ return (
 
       <AccountModal
         open={showAdd || !!editAccount}
-        onClose={() => { setShowAdd(false); setEditAccount(null); }}
+        onClose={() => {
+          setShowAdd(false);
+          setEditAccount(null);
+        }}
         account={editAccount}
         projectId={id!}
         onSave={handleSave}

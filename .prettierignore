@@ -1,0 +1,11 @@
+node_modules
+dist
+.wrangler
+coverage
+playwright-report
+test-results
+wrangler.jsonc
+wrangler.template.jsonc
+package-lock.json
+.env
+.dev.vars

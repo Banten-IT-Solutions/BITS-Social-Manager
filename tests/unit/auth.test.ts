@@ -55,7 +55,9 @@ describe('Rate limiter', () => {
     const { rateLimit } = await import('../../src/worker/middleware/rateLimit');
     const limiter = rateLimit(5, 60000);
     let blocked = false;
-    const mockCtx = { req: { header: (k: string) => k === 'CF-Connecting-IP' ? '1.2.3.4' : undefined } };
+    const mockCtx = {
+      req: { header: (k: string) => (k === 'CF-Connecting-IP' ? '1.2.3.4' : undefined) },
+    };
     for (let i = 0; i < 5; i++) {
       const result = await limiter(mockCtx as any, async () => {});
       if (result instanceof Response) blocked = true;
@@ -66,7 +68,9 @@ describe('Rate limiter', () => {
   it('blocks after exceeding limit', async () => {
     const { rateLimit } = await import('../../src/worker/middleware/rateLimit');
     const limiter = rateLimit(2, 60000);
-    const mockCtx = { req: { header: (k: string) => k === 'CF-Connecting-IP' ? '9.9.9.9' : undefined } };
+    const mockCtx = {
+      req: { header: (k: string) => (k === 'CF-Connecting-IP' ? '9.9.9.9' : undefined) },
+    };
     let lastResult: Response | void = undefined;
     for (let i = 0; i < 4; i++) {
       lastResult = await limiter(mockCtx as any, async () => {});

@@ -20,8 +20,10 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
   const text = await res.text();
   let data: Record<string, unknown> | undefined;
   try {
-    data = text ? JSON.parse(text) as Record<string, unknown> : undefined;
-  } catch { /* non-JSON body — fall through */ }
+    data = text ? (JSON.parse(text) as Record<string, unknown>) : undefined;
+  } catch {
+    /* non-JSON body — fall through */
+  }
 
   if (!res.ok) {
     throw new Error((data?.['error'] as string | undefined) ?? `HTTP ${res.status}`);
@@ -33,15 +35,25 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   auth: {
     register: (body: { name: string; email: string; password: string }) =>
-      req<{ token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+      req<{ token: string; user: User }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
     login: (body: { email: string; password: string }) =>
-      req<{ token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+      req<{ token: string; user: User }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
     logout: () => req<{ success: boolean }>('/auth/logout', { method: 'POST' }),
   },
   profile: {
     get: () => req<{ user: User }>('/profile'),
-    update: (body: { name?: string; email?: string; currentPassword?: string; newPassword?: string }) =>
-      req<{ user: User }>('/profile', { method: 'PUT', body: JSON.stringify(body) }),
+    update: (body: {
+      name?: string;
+      email?: string;
+      currentPassword?: string;
+      newPassword?: string;
+    }) => req<{ user: User }>('/profile', { method: 'PUT', body: JSON.stringify(body) }),
   },
   projects: {
     list: () => req<{ projects: Project[] }>('/projects'),
@@ -50,18 +62,35 @@ export const api = {
       req<{ project: Project }>('/projects', { method: 'POST', body: JSON.stringify(body) }),
     update: (id: string, body: { name?: string; description?: string }) =>
       req<{ project: Project }>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    delete: (id: string) =>
-      req<{ success: boolean }>(`/projects/${id}`, { method: 'DELETE' }),
+    delete: (id: string) => req<{ success: boolean }>(`/projects/${id}`, { method: 'DELETE' }),
   },
   accounts: {
     list: (projectId?: string) =>
       req<{ accounts: SocialAccount[] }>(`/accounts${projectId ? `?projectId=${projectId}` : ''}`),
     get: (id: string) => req<{ account: SocialAccount }>(`/accounts/${id}`),
-    create: (body: { projectId: string; platform: string; accountName: string; emailHandle: string; password: string; notes?: string }) =>
+    create: (body: {
+      projectId: string;
+      platform: string;
+      accountName: string;
+      emailHandle: string;
+      password: string;
+      notes?: string;
+    }) =>
       req<{ account: SocialAccount }>('/accounts', { method: 'POST', body: JSON.stringify(body) }),
-    update: (id: string, body: { platform?: string; accountName?: string; emailHandle?: string; password?: string; notes?: string }) =>
-      req<{ account: SocialAccount }>(`/accounts/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    delete: (id: string) =>
-      req<{ success: boolean }>(`/accounts/${id}`, { method: 'DELETE' }),
+    update: (
+      id: string,
+      body: {
+        platform?: string;
+        accountName?: string;
+        emailHandle?: string;
+        password?: string;
+        notes?: string;
+      }
+    ) =>
+      req<{ account: SocialAccount }>(`/accounts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }),
+    delete: (id: string) => req<{ success: boolean }>(`/accounts/${id}`, { method: 'DELETE' }),
   },
 };

@@ -15,9 +15,8 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "types": ["@cloudflare/workers-types"],
-    "baseUrl": ".",
     "paths": {
-      "@worker/*": ["src/worker/*"]
+      "@worker/*": ["./src/worker/*"]
     }
   },
   "include": ["src/worker"],

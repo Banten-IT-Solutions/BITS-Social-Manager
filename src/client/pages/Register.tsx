@@ -20,7 +20,11 @@ export function RegisterPage() {
   const { setAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
@@ -48,7 +52,10 @@ export function RegisterPage() {
           <p className="text-sm text-zinc-500">Start managing your social accounts</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-6"
+        >
           {error && <Alert variant="destructive">{error}</Alert>}
 
           <FormField label="Name" error={errors.name?.message} required>
@@ -56,11 +63,21 @@ export function RegisterPage() {
           </FormField>
 
           <FormField label="Email" error={errors.email?.message} required>
-            <Input type="email" placeholder="you@example.com" autoComplete="email" {...register('email')} />
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              {...register('email')}
+            />
           </FormField>
 
           <FormField label="Password" error={errors.password?.message} required>
-            <Input type="password" placeholder="min 8 characters" autoComplete="new-password" {...register('password')} />
+            <Input
+              type="password"
+              placeholder="min 8 characters"
+              autoComplete="new-password"
+              {...register('password')}
+            />
           </FormField>
 
           <Button type="submit" className="w-full" loading={isSubmitting}>
@@ -70,7 +87,10 @@ export function RegisterPage() {
 
         <p className="text-center text-sm text-zinc-500">
           Already have an account?{' '}
-          <Link to="/login" className="text-zinc-300 hover:text-zinc-100 underline underline-offset-4">
+          <Link
+            to="/login"
+            className="text-zinc-300 hover:text-zinc-100 underline underline-offset-4"
+          >
             Sign in
           </Link>
         </p>

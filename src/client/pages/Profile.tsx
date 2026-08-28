@@ -5,21 +5,34 @@ import { useState, useEffect } from 'react';
 import { User, Lock, Mail, Save } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
-import { Button, Input, FormField, Alert, Card, CardHeader, CardTitle, CardDescription, CardContent, Separator } from '../components/ui';
+import {
+  Button,
+  Input,
+  FormField,
+  Alert,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Separator,
+} from '../components/ui';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email'),
 });
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Confirm your new password'),
-}).refine(d => d.newPassword === d.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password required'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Confirm your new password'),
+  })
+  .refine(d => d.newPassword === d.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type ProfileForm = z.infer<typeof profileSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
@@ -43,7 +56,7 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (user) profileForm.reset({ name: user.name, email: user.email });
-  }, [user]);  // eslint-disable-line
+  }, [user]); // eslint-disable-line
 
   const onProfileSubmit = async (data: ProfileForm) => {
     setProfileError(null);
@@ -61,7 +74,10 @@ export function ProfilePage() {
     setPwError(null);
     setPwSuccess(false);
     try {
-      await api.profile.update({ currentPassword: data.currentPassword, newPassword: data.newPassword });
+      await api.profile.update({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
       passwordForm.reset();
       setPwSuccess(true);
     } catch (e) {
@@ -73,7 +89,10 @@ export function ProfilePage() {
     <div className="space-y-6 animate-fade-in max-w-6xl">
       <header className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
         {/* Subtle violet glow for depth (matches Dashboard / Project headers) */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent"
+        />
 
         <div className="relative flex items-center gap-3">
           <div
@@ -144,14 +163,41 @@ export function ProfilePage() {
             <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
               {pwError && <Alert variant="destructive">{pwError}</Alert>}
               {pwSuccess && <Alert>Password changed successfully.</Alert>}
-              <FormField label="Current password" error={passwordForm.formState.errors.currentPassword?.message} required>
-                <Input type="password" autoComplete="current-password" {...passwordForm.register('currentPassword')} className="min-h-[44px]" />
+              <FormField
+                label="Current password"
+                error={passwordForm.formState.errors.currentPassword?.message}
+                required
+              >
+                <Input
+                  type="password"
+                  autoComplete="current-password"
+                  {...passwordForm.register('currentPassword')}
+                  className="min-h-[44px]"
+                />
               </FormField>
-              <FormField label="New password" error={passwordForm.formState.errors.newPassword?.message} required>
-                <Input type="password" autoComplete="new-password" {...passwordForm.register('newPassword')} className="min-h-[44px]" />
+              <FormField
+                label="New password"
+                error={passwordForm.formState.errors.newPassword?.message}
+                required
+              >
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  {...passwordForm.register('newPassword')}
+                  className="min-h-[44px]"
+                />
               </FormField>
-              <FormField label="Confirm new password" error={passwordForm.formState.errors.confirmPassword?.message} required>
-                <Input type="password" autoComplete="new-password" {...passwordForm.register('confirmPassword')} className="min-h-[44px]" />
+              <FormField
+                label="Confirm new password"
+                error={passwordForm.formState.errors.confirmPassword?.message}
+                required
+              >
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  {...passwordForm.register('confirmPassword')}
+                  className="min-h-[44px]"
+                />
               </FormField>
               <Button type="submit" loading={passwordForm.formState.isSubmitting}>
                 <Lock className="h-4 w-4 mr-1.5" />

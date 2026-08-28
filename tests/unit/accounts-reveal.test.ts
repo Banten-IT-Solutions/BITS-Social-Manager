@@ -20,9 +20,15 @@ const TS = 1756000000;
 
 function accountRow(encrypted: string) {
   return {
-    id: ACCOUNT, project_id: PROJECT, platform: 'Gmail', account_name: 'Biz',
-    email_handle: 'biz@x.co', password_encrypted: encrypted,
-    notes: null, created_at: TS, updated_at: TS,
+    id: ACCOUNT,
+    project_id: PROJECT,
+    platform: 'Gmail',
+    account_name: 'Biz',
+    email_handle: 'biz@x.co',
+    password_encrypted: encrypted,
+    notes: null,
+    created_at: TS,
+    updated_at: TS,
   };
 }
 
@@ -32,8 +38,13 @@ function makeD1(opts: { encrypted?: string; owned?: boolean; boom?: boolean } = 
   return {
     prepare(sql: string) {
       const stmt = {
-        bind(..._params: unknown[]) { return stmt; },
-        async run() { if (opts.boom) throw new Error('D1 internal error'); return { success: true }; },
+        bind(..._params: unknown[]) {
+          return stmt;
+        },
+        async run() {
+          if (opts.boom) throw new Error('D1 internal error');
+          return { success: true };
+        },
         async all() {
           if (opts.boom) throw new Error('D1 internal error');
           if (/social_accounts/i.test(sql)) return { results: row ? [row] : [] };
@@ -42,7 +53,21 @@ function makeD1(opts: { encrypted?: string; owned?: boolean; boom?: boolean } = 
         async raw() {
           if (opts.boom) throw new Error('D1 internal error');
           if (/social_accounts/i.test(sql)) {
-            return row ? [[row.id, row.project_id, row.platform, row.account_name, row.email_handle, row.password_encrypted, row.notes, row.created_at, row.updated_at]] : [];
+            return row
+              ? [
+                  [
+                    row.id,
+                    row.project_id,
+                    row.platform,
+                    row.account_name,
+                    row.email_handle,
+                    row.password_encrypted,
+                    row.notes,
+                    row.created_at,
+                    row.updated_at,
+                  ],
+                ]
+              : [];
           }
           if (/projects/i.test(sql)) return opts.owned === false ? [] : [[PROJECT]];
           return [];
@@ -54,20 +79,34 @@ function makeD1(opts: { encrypted?: string; owned?: boolean; boom?: boolean } = 
 }
 
 async function call(path: string, d1: D1Database, env: Record<string, unknown> = {}) {
-  const token = await signJWT({ sub: USER, email: 'user@example.com', name: 'User' }, 'test-secret');
-  const request = new Request(`https://social.bits.co.id${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  const token = await signJWT(
+    { sub: USER, email: 'user@example.com', name: 'User' },
+    'test-secret'
+  );
+  const request = new Request(`https://social.bits.co.id${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return worker.fetch(
     request,
-    { DB: d1, JWT_SECRET: 'test-secret', ENCRYPTION_KEY: KEY, ASSETS: { fetch: () => new Response(null) }, ...env } as never,
-    { waitUntil: () => {}, passThroughOnException: () => {} } as never,
+    {
+      DB: d1,
+      JWT_SECRET: 'test-secret',
+      ENCRYPTION_KEY: KEY,
+      ASSETS: { fetch: () => new Response(null) },
+      ...env,
+    } as never,
+    { waitUntil: () => {}, passThroughOnException: () => {} } as never
   );
 }
 
 describe('GET /api/accounts/:id password reveal', () => {
   it('returns 422 JSON (not a raw 500) when stored ciphertext was written under a different key', async () => {
-    const res = await call(`/api/accounts/${ACCOUNT}`, makeD1({ encrypted: await encrypt('hunter2', OLD_KEY) }));
+    const res = await call(
+      `/api/accounts/${ACCOUNT}`,
+      makeD1({ encrypted: await encrypt('hunter2', OLD_KEY) })
+    );
     expect(res.status).toBe(422);
-    const body = await res.json() as { error?: string };
+    const body = (await res.json()) as { error?: string };
     expect(body.error).toMatch(/could not be decrypted/i);
   });
 
@@ -77,26 +116,38 @@ describe('GET /api/accounts/:id password reveal', () => {
   });
 
   it('reveals the password and strips ciphertext on the happy path', async () => {
-    const res = await call(`/api/accounts/${ACCOUNT}`, makeD1({ encrypted: await encrypt('hunter2', KEY) }));
+    const res = await call(
+      `/api/accounts/${ACCOUNT}`,
+      makeD1({ encrypted: await encrypt('hunter2', KEY) })
+    );
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('no-store');
-    const body = await res.json() as { account: { password?: string; passwordEncrypted?: string } };
+    const body = (await res.json()) as {
+      account: { password?: string; passwordEncrypted?: string };
+    };
     expect(body.account.password).toBe('hunter2');
     expect(body.account.passwordEncrypted).toBeUndefined();
   });
 
   it('still returns 404 for accounts not owned by the caller (no cross-tenant leak)', async () => {
-    const res = await call(`/api/accounts/${ACCOUNT}`, makeD1({ encrypted: await encrypt('x', KEY), owned: false }));
+    const res = await call(
+      `/api/accounts/${ACCOUNT}`,
+      makeD1({ encrypted: await encrypt('x', KEY), owned: false })
+    );
     expect(res.status).toBe(404);
-    const body = await res.json() as { error?: string };
+    const body = (await res.json()) as { error?: string };
     expect(body.error).not.toMatch(/password/);
   });
 
   it('missing ENCRYPTION_KEY secret surfaces as a JSON 500 through the global error handler', async () => {
-    const res = await call(`/api/accounts/${ACCOUNT}`, makeD1({ encrypted: await encrypt('hunter2', KEY) }), { ENCRYPTION_KEY: undefined });
+    const res = await call(
+      `/api/accounts/${ACCOUNT}`,
+      makeD1({ encrypted: await encrypt('hunter2', KEY) }),
+      { ENCRYPTION_KEY: undefined }
+    );
     expect(res.status).toBe(500);
     expect(res.headers.get('content-type')).toContain('application/json');
-    const body = await res.json() as { error?: string };
+    const body = (await res.json()) as { error?: string };
     expect(body.error).toBe('Internal Server Error');
   });
 

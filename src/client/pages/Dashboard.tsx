@@ -7,9 +7,22 @@ import { z } from 'zod';
 import { api } from '../lib/api';
 import type { Project } from '../lib/types';
 import {
-  Button, Input, Textarea, FormField, Alert,
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-  Card, CardHeader, CardTitle, CardDescription, CardContent,
+  Button,
+  Input,
+  Textarea,
+  FormField,
+  Alert,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
   Badge,
 } from '../components/ui';
 
@@ -38,14 +51,24 @@ const HEADER_CTA =
 const HEADER_ICON_TILE =
   'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-violet-500/20 bg-gradient-to-br from-violet-500/20 to-violet-600/10';
 
-function ProjectModal({ open, onClose, project, onSave }: {
+function ProjectModal({
+  open,
+  onClose,
+  project,
+  onSave,
+}: {
   open: boolean;
   onClose: () => void;
   project?: Project | null;
   onSave: (p: Project) => void;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProjectForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProjectForm>({
     resolver: zodResolver(projectSchema),
     defaultValues: { name: project?.name ?? '', description: project?.description ?? '' },
   });
@@ -89,8 +112,12 @@ function ProjectModal({ open, onClose, project, onSave }: {
             <Textarea placeholder="Optional description..." rows={3} {...register('description')} />
           </FormField>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" loading={isSubmitting}>{project ? 'Save changes' : 'Create project'}</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={isSubmitting}>
+              {project ? 'Save changes' : 'Create project'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -98,7 +125,12 @@ function ProjectModal({ open, onClose, project, onSave }: {
   );
 }
 
-function DeleteModal({ open, onClose, project, onDeleted }: {
+function DeleteModal({
+  open,
+  onClose,
+  project,
+  onDeleted,
+}: {
   open: boolean;
   onClose: () => void;
   project: Project | null;
@@ -128,13 +160,18 @@ function DeleteModal({ open, onClose, project, onDeleted }: {
         <DialogHeader>
           <DialogTitle>Delete project</DialogTitle>
           <DialogDescription>
-            This will permanently delete <strong className="text-zinc-200">{project?.name}</strong> and all its social accounts.
+            This will permanently delete <strong className="text-zinc-200">{project?.name}</strong>{' '}
+            and all its social accounts.
           </DialogDescription>
         </DialogHeader>
         {error && <Alert variant="destructive">{error}</Alert>}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="destructive" loading={loading} onClick={handleDelete}>Delete</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="destructive" loading={loading} onClick={handleDelete}>
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -156,11 +193,11 @@ export function DashboardPage() {
     try {
       const res = await api.projects.list();
       setProjects(res.projects);
-      
+
       // Fetch account counts for each project
       const counts: Record<string, number> = {};
       await Promise.all(
-        res.projects.map(async (project) => {
+        res.projects.map(async project => {
           try {
             const accountsRes = await api.accounts.list(project.id);
             counts[project.id] = accountsRes.accounts.length;
@@ -177,7 +214,9 @@ export function DashboardPage() {
     }
   }, []);
 
-  useEffect(() => { fetchProjects(); }, [fetchProjects]);
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleSave = (p: Project) => {
     setProjects(prev => {
@@ -199,7 +238,10 @@ export function DashboardPage() {
     <div className="space-y-6 animate-fade-in">
       <header className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
         {/* Subtle violet glow for depth */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/10 via-transparent to-transparent"
+        />
 
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
@@ -236,7 +278,10 @@ export function DashboardPage() {
       {loading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-32 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse" />
+            <div
+              key={i}
+              className="h-32 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse"
+            />
           ))}
         </div>
       ) : projects.length === 0 ? (
@@ -258,7 +303,7 @@ export function DashboardPage() {
             >
               {/* Gradient overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              
+
               <div className="relative p-5 space-y-4">
                 {/* Header with icon and actions */}
                 <div className="flex items-start justify-between gap-3">
@@ -267,7 +312,7 @@ export function DashboardPage() {
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center group-hover:from-violet-500/30 group-hover:to-violet-600/20 transition-all">
                       <FolderOpen className="h-5 w-5 text-violet-400" />
                     </div>
-                    
+
                     {/* Title and description */}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-zinc-100 truncate group-hover:text-white transition-colors">
@@ -280,14 +325,14 @@ export function DashboardPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Actions - show on hover */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 hover:bg-zinc-800"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
                         setEditProject(project);
@@ -300,7 +345,7 @@ export function DashboardPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 hover:bg-zinc-800 hover:text-red-400"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
                         setDeleteProject(project);
@@ -318,16 +363,19 @@ export function DashboardPage() {
                     {/* Account count badge */}
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-violet-500/60" />
-                      <span>{accountCounts[project.id] ?? 0} {accountCounts[project.id] === 1 ? 'account' : 'accounts'}</span>
+                      <span>
+                        {accountCounts[project.id] ?? 0}{' '}
+                        {accountCounts[project.id] === 1 ? 'account' : 'accounts'}
+                      </span>
                     </div>
-                    
+
                     {/* Updated date */}
                     <div className="flex items-center gap-1.5">
                       <Calendar className="h-3 w-3" />
                       <span>{formatDate(project.updatedAt)}</span>
                     </div>
                   </div>
-                  
+
                   {/* Arrow indicator */}
                   <ChevronRight className="h-4 w-4 text-zinc-600 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
                 </div>
@@ -339,7 +387,10 @@ export function DashboardPage() {
 
       <ProjectModal
         open={showCreate || !!editProject}
-        onClose={() => { setShowCreate(false); setEditProject(null); }}
+        onClose={() => {
+          setShowCreate(false);
+          setEditProject(null);
+        }}
         project={editProject}
         onSave={handleSave}
       />

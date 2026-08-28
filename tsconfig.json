@@ -16,10 +16,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/client/*"],
-      "@worker/*": ["src/worker/*"]
+      "@/*": ["./src/client/*"],
+      "@worker/*": ["./src/worker/*"]
     }
   },
   "include": ["src/client", "tests"],

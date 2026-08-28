@@ -9,10 +9,14 @@ import { api } from '../lib/api';
  */
 export function useLogout() {
   const navigate = useNavigate();
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const clearAuth = useAuthStore(state => state.clearAuth);
 
   return useCallback(async () => {
-    try { await api.auth.logout(); } catch { /* ignore */ }
+    try {
+      await api.auth.logout();
+    } catch {
+      /* ignore */
+    }
     clearAuth();
     navigate('/login');
   }, [clearAuth, navigate]);

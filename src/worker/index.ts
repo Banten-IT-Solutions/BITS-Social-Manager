@@ -25,7 +25,10 @@ const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 // Global error handler — never leak a raw (non-JSON) 500 to clients.
 // Details go to Worker logs only; the response body stays generic.
 app.onError((err, c) => {
-  console.error(`[worker] unhandled ${c.req.method} ${c.req.path}:`, err instanceof Error ? err.stack : err);
+  console.error(
+    `[worker] unhandled ${c.req.method} ${c.req.path}:`,
+    err instanceof Error ? err.stack : err
+  );
   return c.json({ error: 'Internal Server Error' }, 500);
 });
 
@@ -33,12 +36,15 @@ app.onError((err, c) => {
 app.use('*', secureHeaders());
 
 // CORS — reflect origin, no credentials
-app.use('/api/*', cors({
-  origin: (origin) => origin ?? '*',
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  credentials: false,
-}));
+app.use(
+  '/api/*',
+  cors({
+    origin: origin => origin ?? '*',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: false,
+  })
+);
 
 // Routes
 app.route('/api/auth', authRoutes);
@@ -47,10 +53,10 @@ app.route('/api/projects', projectsRoutes);
 app.route('/api/accounts', accountsRoutes);
 
 // Health
-app.get('/api/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
+app.get('/api/health', c => c.json({ status: 'ok', ts: Date.now() }));
 
 // 404 for unknown API
-app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404));
+app.all('/api/*', c => c.json({ error: 'Not found' }, 404));
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

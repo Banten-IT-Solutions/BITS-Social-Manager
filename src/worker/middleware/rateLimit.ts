@@ -25,7 +25,10 @@ function sweep(now: number) {
 }
 
 export function rateLimit(max: number, windowMs: number) {
-  return async (c: { req: { header: (k: string) => string | undefined } }, next: () => Promise<Response | void>): Promise<Response | void> => {
+  return async (
+    c: { req: { header: (k: string) => string | undefined } },
+    next: () => Promise<Response | void>
+  ): Promise<Response | void> => {
     const ip = (c.req.header('CF-Connecting-IP') ?? 'unknown').split(',')[0]!.trim();
     const now = Date.now();
     sweep(now);

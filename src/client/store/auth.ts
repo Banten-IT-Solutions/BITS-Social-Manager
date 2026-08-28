@@ -12,7 +12,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    set => ({
       token: null,
       user: null,
       setAuth: (token, user) => {
@@ -23,11 +23,11 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('token');
         set({ token: null, user: null });
       },
-      updateUser: (user) => set({ user }),
+      updateUser: user => set({ user }),
     }),
     {
       name: 'auth-storage',
-      partialize: (s) => ({ token: s.token, user: s.user }),
+      partialize: s => ({ token: s.token, user: s.user }),
     }
   )
 );

@@ -6,14 +6,14 @@ node_modules/
 dist/
 .open-next/
 
-# Wrangler / Cloudflare local state
+# Wrangler
 .wrangler/
 .dev.vars
 *.local
-# Generated dari wrangler.template.jsonc oleh `npm run cf:config`
+# Generated from wrangler.template.jsonc by `npm run cf:config`
 wrangler.jsonc
 
-# Env & secrets
+# Env
 .env
 .env.*
 !.env.example

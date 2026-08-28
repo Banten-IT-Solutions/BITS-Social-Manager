@@ -37,14 +37,21 @@ async function importKey(hexKey: string): Promise<CryptoKey> {
   if (!hexKey) throw new Error('ENCRYPTION_KEY is not configured');
   const raw = hexToBytes(hexKey);
   if (raw.length !== 32) throw new Error('ENCRYPTION_KEY must be 64 hex chars (32 bytes)');
-  return crypto.subtle.importKey('raw', raw.buffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  return crypto.subtle.importKey('raw', raw.buffer, { name: 'AES-GCM' }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
 }
 
 export async function encrypt(plaintext: string, hexKey: string): Promise<string> {
   const key = await importKey(hexKey);
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH)) as Uint8Array<ArrayBuffer>;
   const encoded = new TextEncoder().encode(plaintext) as Uint8Array<ArrayBuffer>;
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv.buffer }, key, encoded.buffer);
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv.buffer },
+    key,
+    encoded.buffer
+  );
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(ciphertext), iv.length);
@@ -54,7 +61,12 @@ export async function encrypt(plaintext: string, hexKey: string): Promise<string
 export async function decrypt(b64: string, hexKey: string): Promise<string> {
   const key = await importKey(hexKey);
 
-  if (typeof b64 !== 'string' || b64.length === 0 || b64.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) {
+  if (
+    typeof b64 !== 'string' ||
+    b64.length === 0 ||
+    b64.length % 4 !== 0 ||
+    !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)
+  ) {
     throw new DecryptError('Stored password is not valid base64 ciphertext');
   }
 
@@ -78,7 +90,10 @@ export async function decrypt(b64: string, hexKey: string): Promise<string> {
     plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv.buffer }, key, data.buffer);
   } catch (err) {
     // Auth failure: wrong key (rotated/mismatched ENCRYPTION_KEY) or corrupted data.
-    throw new DecryptError('Password could not be decrypted: wrong encryption key or corrupted ciphertext', { cause: err });
+    throw new DecryptError(
+      'Password could not be decrypted: wrong encryption key or corrupted ciphertext',
+      { cause: err }
+    );
   }
   return new TextDecoder().decode(plain);
 }

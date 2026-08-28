@@ -14,7 +14,9 @@ describe('JWT utilities', () => {
 
   it('rejects wrong secret', async () => {
     const token = await signJWT({ sub: 'u', email: 'x@y.com', name: 'X' }, SECRET);
-    await expect(verifyJWT(token, 'wrong-secret-padded-to-at-least-32-chars!')).rejects.toThrow('Invalid signature');
+    await expect(verifyJWT(token, 'wrong-secret-padded-to-at-least-32-chars!')).rejects.toThrow(
+      'Invalid signature'
+    );
   });
 
   it('rejects expired token', async () => {

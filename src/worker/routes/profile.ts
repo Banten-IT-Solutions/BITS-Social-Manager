@@ -11,26 +11,31 @@ import type { Env, Variables } from '../index';
 const profile = new Hono<{ Bindings: Env; Variables: Variables }>();
 profile.use('*', authMiddleware);
 
-const updateSchema = z.object({
-  name: z.string().min(2).max(100).trim().optional(),
-  email: z.string().email().toLowerCase().optional(),
-  currentPassword: z.string().optional(),
-  newPassword: z.string().min(8).max(128).optional(),
-}).refine(d => !d.newPassword || d.currentPassword, {
-  message: 'currentPassword required when changing password',
-  path: ['currentPassword'],
-});
+const updateSchema = z
+  .object({
+    name: z.string().min(2).max(100).trim().optional(),
+    email: z.string().email().toLowerCase().optional(),
+    currentPassword: z.string().optional(),
+    newPassword: z.string().min(8).max(128).optional(),
+  })
+  .refine(d => !d.newPassword || d.currentPassword, {
+    message: 'currentPassword required when changing password',
+    path: ['currentPassword'],
+  });
 
-profile.get('/', async (c) => {
+profile.get('/', async c => {
   const userId = c.get('userId');
   const db = getDb(c.env.DB);
-  const user = await db.select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
-    .from(users).where(eq(users.id, userId)).get();
+  const user = await db
+    .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
+    .from(users)
+    .where(eq(users.id, userId))
+    .get();
   if (!user) return c.json({ error: 'Not found' }, 404);
   return c.json({ user });
 });
 
-profile.put('/', zValidator('json', updateSchema), async (c) => {
+profile.put('/', zValidator('json', updateSchema), async c => {
   const userId = c.get('userId');
   const data = c.req.valid('json');
   const db = getDb(c.env.DB);
@@ -45,7 +50,11 @@ profile.put('/', zValidator('json', updateSchema), async (c) => {
   if (data.name) updates.name = data.name;
 
   if (data.email && data.email !== user.email) {
-    const conflict = await db.select({ id: users.id }).from(users).where(eq(users.email, data.email)).get();
+    const conflict = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, data.email))
+      .get();
     if (conflict) return c.json({ error: 'Email already in use' }, 409);
     updates.email = data.email;
   }
@@ -66,7 +75,11 @@ profile.put('/', zValidator('json', updateSchema), async (c) => {
     throw error;
   }
 
-  const updated = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, userId)).get();
+  const updated = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .get();
   return c.json({ user: updated });
 });
 

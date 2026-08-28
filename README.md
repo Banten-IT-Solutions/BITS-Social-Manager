@@ -1,23 +1,16 @@
 <div align="center">
   <h1>BITS Social Manager</h1>
   <p>
-    <a href="https://social.bits.co.id">
-      <img src="https://img.shields.io/badge/social.bits.co.id-Online-00C853?style=for-the-badge&logo=statuspage&logoColor=white" alt="social.bits.co.id Online" />
-    </a>
+    Secure social account manager for organizing project credentials across teams
   </p>
-  <p>
-    Manage, secure, and organize social account credentials across projects
-  </p>
-  <br>
   <p>
     <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
     <img src="https://img.shields.io/badge/Cloudflare%20D1-F38020?style=flat&logo=cloudflare&logoColor=white" alt="Cloudflare D1" />
     <img src="https://img.shields.io/badge/Hono-E36002?style=flat&logo=hono&logoColor=white" alt="Hono" />
+    <img src="https://img.shields.io/badge/React%2019-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React 19" />
     <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/React-18-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React 18" />
-    <img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
-    <img src="https://img.shields.io/badge/Tailwind%20CSS-38B2AC?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest&logoColor=white" alt="Vitest" />
+    <img src="https://img.shields.io/badge/Vite%208-646CFF?style=flat&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Tailwind%20CSS%204-38B2AC?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="MIT License" />
   </p>
 </div>
@@ -26,102 +19,67 @@
 
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| **Project Organization** | Group social accounts per project |
-| **Encrypted Credentials** | Store passwords with AES-256-GCM |
-| **JWT Authentication** | Register, login, logout, profile update |
-| **Account Reveal Flow** | Decrypt password only on single account view |
-| **Rate Limited Auth** | Limit register/login abuse |
-| **Role-safe Ownership Checks** | Projects and accounts locked per user |
-| **Cloudflare Native Deploy** | Workers, D1, custom domain, assets |
-| **Type-safe UI + API** | React, Hono, Zod, TypeScript |
-| **Test Coverage** | Unit tests + e2e tests |
+| Feature                   | Description                                                                |
+| ------------------------- | -------------------------------------------------------------------------- |
+| **Project Organization**  | Group social accounts by project with isolated ownership                   |
+| **Encrypted Credentials** | AES-256-GCM encryption for account passwords, bcrypt for user passwords    |
+| **JWT Authentication**    | Register, login, profile management with signed tokens                     |
+| **Account Reveal Flow**   | Password decrypted only on single-account view (`Cache-Control: no-store`) |
+| **Rate-Limited Auth**     | Brute-force protection on login and registration                           |
+| **Ownership Enforcement** | All project and account operations scoped to the authenticated user        |
+| **Cloudflare Native**     | Workers, D1, custom domain, and static assets via single Worker            |
+| **Type-Safe Stack**       | End-to-end TypeScript with Hono, Zod, React Hook Form, and Drizzle ORM     |
+| **Test Coverage**         | Unit tests (Vitest) and end-to-end tests (Playwright)                      |
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, React Router, React Hook Form, Zod, Zustand, Lucide React |
-| **Backend** | Cloudflare Workers, Hono, D1 (SQLite), Drizzle ORM, bcryptjs, Web Crypto API |
-| **Testing** | Vitest, Playwright |
-| **Tooling** | Wrangler, ESLint-style TypeScript checks, npm |
+| Layer        | Technology                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Frontend** | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router 7, React Hook Form, Zod 4, Zustand, Lucide React |
+| **Backend**  | Cloudflare Workers, Hono 4, D1 (SQLite), Drizzle ORM, bcryptjs, Web Crypto API                                |
+| **Testing**  | Vitest 4, Playwright 1.62                                                                                     |
+| **Tooling**  | Wrangler 4, ESLint 10, Prettier 3, simple-git-hooks + lint-staged, `scripts/gen-wrangler.mjs`                 |
 
 ---
-
-## 🏗️ Arsitektur
-
-```
-Browser
-  ├─ Static assets (SPA React)      → Workers Assets — GRATIS, tak dihitung
-  └─ /api/* (JSON)                  → Hono Worker (~1ms CPU)
-        ├─ D1 binding      (database)
-        └─ Web Crypto      (AES-GCM, JWT)
-```
-
-## ⚙️ Konfigurasi dinamis (tanpa nilai environment di repo)
-
-Tidak ada ID database, nama Worker, atau domain yang di-commit. Semua nilai
-lingkungan disuntik saat build/deploy (ala BITS-Nota):
-
-```
-wrangler.template.jsonc   ← di-commit, berisi placeholder
-        │  npm run cf:config (scripts/gen-wrangler.mjs)
-        ▼
-wrangler.jsonc            ← generated, ter-gitignore
-        ▲
-        ├─ lokal : file .env (salin dari .env.example)
-        └─ CI    : GitHub Secrets
-```
-
-| Variabel | Contoh nilai | Keterangan |
-|---|---|---|
-| `WORKER_NAME` | `bits-social-manager` | Nama Worker di Cloudflare |
-| `D1_DATABASE_NAME` | `bits-social-manager` | Nama database D1 (konsisten tanpa suffix) |
-| `D1_DATABASE_ID` | `abcd-1234-…` | Dari output `wrangler d1 create` |
-| `APP_URL` | `https://social.bits.co.id` | URL publik |
-| `APP_DOMAIN` | `social.bits.co.id` | Custom domain Worker |
-| `JWT_SECRET` | — | Secret HMAC, minimal 32 chars |
-| `ENCRYPTION_KEY` | — | Secret AES 64 hex, `openssl rand -hex 32` |
-| `CLOUDFLARE_API_TOKEN` | — | Token API (kredensial) |
-| `CLOUDFLARE_ACCOUNT_ID` | — | ID akun Cloudflare |
 
 ## 📁 Project Structure
 
 ```text
 BITS-Social-Manager/
 ├── .github/
-│   └── workflows/
-│       └── deploy.yml          # CI deploy pipeline (template-driven)
+│   ├── workflows/
+│   │   └── deploy.yaml       # manual deploy via workflow_dispatch
+│   └── dependabot.yml        # weekly npm + github-actions updates
 ├── migrations/
-│   └── 0001_init.sql           # D1 schema migration
-├── public/
-│   └── favicon.svg             # Static public asset
+│   └── 0001_init.sql         # D1 schema
 ├── scripts/
-│   └── gen-wrangler.mjs        # Generator wrangler.jsonc dari template
+│   └── gen-wrangler.mjs      # generates wrangler.jsonc from template
 ├── src/
-│   ├── client/
-│   │   ├── App.tsx             # App router + layout shell
-│   │   ├── main.tsx            # Client entrypoint
-│   │   ├── styles.css          # Global styles
-│   │   ├── components/         # Layout, sidebar, UI, route guards
-│   │   ├── lib/                # API client, types, utils
-│   │   ├── pages/              # Login, register, dashboard, profile, project
-│   │   └── store/              # Auth state
-│   └── worker/
-│       ├── index.ts            # Worker entry + CORS + assets routing
-│       ├── db/                 # D1 connection and schema
-│       ├── middleware/         # Auth and rate limit
-│       ├── routes/             # auth, profile, projects, accounts
-│       └── utils/              # JWT and crypto helpers
+│   ├── client/               # React SPA
+│   │   ├── components/       # layout, guards, UI primitives
+│   │   ├── pages/            # login, register, dashboard, project, profile
+│   │   ├── store/            # Zustand auth state
+│   │   ├── lib/              # API client, types, utils
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── styles.css
+│   └── worker/               # Cloudflare Worker
+│       ├── db/               # D1 connection and schema
+│       ├── middleware/       # auth, rate limit
+│       ├── routes/           # auth, profile, projects, accounts
+│       ├── utils/            # jwt, crypto
+│       └── index.ts          # Hono app + asset routing
 ├── tests/
-│   ├── unit/                   # auth, crypto, jwt tests
-│   └── e2e/                    # app smoke test
-├── wrangler.template.jsonc     # Template — placeholder disubstitusi oleh cf:config
-├── .env.example                # Contoh env lokal
-├── .dev.vars.example           # Contoh dev vars
-├── package.json
-└── vite.config.ts              # Vite + @cloudflare/vite-plugin
+│   ├── unit/                 # crypto, jwt, auth
+│   └── e2e/                  # smoke tests
+├── wrangler.template.jsonc   # template with ${VAR} placeholders
+├── .env.example              # vars for local development
+├── .dev.vars.example         # secrets for local development
+├── vite.config.ts
+├── vitest.config.ts
+├── eslint.config.js
+├── .prettierrc.json
+└── package.json
 ```
 
 ---
@@ -130,154 +88,219 @@ BITS-Social-Manager/
 
 ### Prerequisites
 
-- Node.js 24+
-- npm
-- Cloudflare account (zone `bits.co.id` aktif untuk custom domain)
+- Node.js 24+ (LTS recommended)
+- npm 10+
+- Cloudflare account with an active zone for the custom domain
 - D1 database
 
-### Steps
+### 1. Clone
 
 ```bash
 git clone https://github.com/Banten-IT-Solutions/BITS-Social-Manager.git
 cd BITS-Social-Manager
-npm ci
-wrangler login
-
-# 1. Provision resource (sekali saja) — nama konsisten bits-social-manager
-wrangler d1 create bits-social-manager   # salin database_id
-
-# 2. Konfigurasi lokal
-cp .env.example .env                     # isi D1_DATABASE_ID di sini
-cp .dev.vars.example .dev.vars           # isi JWT_SECRET & ENCRYPTION_KEY untuk dev
-
-# 3. Migrasi skema (lokal)
-npm run db:migrate:local
-
-# 4. Set secrets (prod: via wrangler secret put, dev: via .dev.vars)
-# Lokal dev sudah via .dev.vars, untuk prod:
-# echo "$(openssl rand -base64 48)" | wrangler secret put JWT_SECRET
-# echo "$(openssl rand -hex 32)" | wrangler secret put ENCRYPTION_KEY
-
-# 5. Jalankan (otomatis cf:config → vite + worker)
-npm run dev
 ```
 
-Access:
-
-- Frontend + API: `http://localhost:5173` (single server via @cloudflare/vite-plugin)
-
-Build:
+### 2. Install
 
 ```bash
-npm run build   # otomatis cf:config + vite build
+npm install
+# installs git hooks via `prepare` (simple-git-hooks)
 ```
 
-Deploy (manual lokal):
+### 3. Configure (Local)
 
 ```bash
+cp .env.example .env
+cp .dev.vars.example .dev.vars
+
+# Edit .env — required:
+#   WORKER_NAME, D1_DATABASE_NAME, D1_DATABASE_ID, APP_URL, APP_DOMAIN
+# Edit .dev.vars — required for `wrangler dev`:
+#   JWT_SECRET (min 32 chars), ENCRYPTION_KEY (64 hex chars)
+
+npm run cf:config
+```
+
+> `wrangler.jsonc` is generated and gitignored. It is the only config used by `wrangler dev` and `wrangler deploy`.
+
+### 4. Develop
+
+```bash
+npm run dev              # Vite + Worker with HMR (single server)
+npm run db:migrate:local # apply D1 migrations locally
+npm run test             # unit tests
+npm run test:e2e         # e2e tests
+```
+
+### 5. Required Cloudflare Resources (One-Time Setup)
+
+Create once before the first deploy. CI only deploys code; it does not provision resources.
+
+| Resource        | Command                                  |
+| --------------- | ---------------------------------------- |
+| **D1 Database** | `wrangler d1 create bits-social-manager` |
+
+> Custom domain is auto-provisioned on deploy from `routes: [{ "pattern": "${APP_DOMAIN}", "custom_domain": true }]` in `wrangler.template.jsonc`. Ensure the zone for `APP_DOMAIN` is active in Cloudflare.
+
+### 6. Deploy
+
+#### Option A — Local Deploy
+
+Best for quick iteration from your machine.
+
+```bash
+npx wrangler login
+npm run cf:config
 npm run db:migrate:remote
 npm run deploy
+# equivalent to: npm run build && wrangler deploy
 ```
 
-Deploy otomatis: push ke `main` → GitHub Actions generate `wrangler.jsonc` dari Secrets → typecheck → build → migrate → deploy.
+#### Option B — Remote Deploy via GitHub Actions (Recommended)
+
+Best for production and team workflows. Triggered manually via `workflow_dispatch`.
+
+1. Configure **GitHub Variables** and **Secrets** (tables below) at `Settings → Secrets and variables → Actions`.
+2. Go to `Actions → Deploy → Run workflow`.
+
+Pushes to `main` do not auto-deploy.
+
+##### GitHub Variables
+
+| Variable           | Example                     | Required | Description                              |
+| ------------------ | --------------------------- | -------- | ---------------------------------------- |
+| `WORKER_NAME`      | `bits-social-manager`       | Required | Worker name                              |
+| `D1_DATABASE_NAME` | `bits-social-manager`       | Required | D1 database name                         |
+| `D1_DATABASE_ID`   | `xxxx-xxxx-xxxx`            | Required | D1 database ID from `wrangler d1 create` |
+| `APP_URL`          | `https://social.bits.co.id` | Required | Public URL                               |
+| `APP_DOMAIN`       | `social.bits.co.id`         | Required | Custom domain                            |
+
+##### GitHub Secrets
+
+| Secret                  | Required | Description                                       |
+| ----------------------- | -------- | ------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Required | Cloudflare API token with Workers Edit permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Required | Cloudflare Account ID                             |
+| `JWT_SECRET`            | Required | Min 32 chars, `openssl rand -base64 48`           |
+| `ENCRYPTION_KEY`        | Required | 64 hex chars (32 bytes), `openssl rand -hex 32`   |
+
+> Secrets are synced via `wrangler secret bulk` during deploy. For local development, set them in `.dev.vars`.
+
+### 7. Configuration Flow
+
+```
+wrangler.template.jsonc  (committed, ${VAR} placeholders)
+        │  npm run cf:config (scripts/gen-wrangler.mjs)
+        ▼
+wrangler.jsonc           (generated, gitignored)
+        ▲
+        ├─ local: .env + .dev.vars
+        └─ CI:    GitHub Variables + Secrets
+```
 
 ---
 
 ## 💻 Development
 
-### Scripts
+### Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Run Vite + Cloudflare Worker (single server via @cloudflare/vite-plugin) |
-| `npm run build` | Build frontend assets (`cf:config` + Vite) |
-| `npm run preview` | Preview frontend build |
-| `npm run deploy` | Build then deploy Worker (`bits-social-manager`) |
-| `npm run cf:config` | Generate `wrangler.jsonc` dari template |
-| `npm run db:migrate:local` | Apply D1 migrations (local) |
-| `npm run db:migrate:remote` | Apply D1 migrations (remote) |
-| `npm run test` | Run unit tests |
-| `npm run test:e2e` | Run Playwright tests |
-| `npm run type-check` | Run TypeScript checks |
+| Command                     | Description                                         |
+| --------------------------- | --------------------------------------------------- |
+| `npm run cf:config`         | Generate `wrangler.jsonc` from `.env` / environment |
+| `npm run dev`               | Start Vite + Worker                                 |
+| `npm run build`             | Generate config and build client assets             |
+| `npm run deploy`            | Build and deploy Worker                             |
+| `npm run cf:typegen`        | Generate Cloudflare Workers types                   |
+| `npm run db:generate`       | Generate Drizzle migration                          |
+| `npm run db:migrate:local`  | Apply D1 migrations locally                         |
+| `npm run db:migrate:remote` | Apply D1 migrations remotely                        |
+| `npm run test`              | Run unit tests (Vitest)                             |
+| `npm run test:e2e`          | Run e2e tests (Playwright)                          |
+| `npm run type-check`        | TypeScript checks (client + worker)                 |
+| `npm run check`             | Type check + lint                                   |
+| `npm run lint`              | ESLint                                              |
+| `npm run format`            | Format with Prettier                                |
+| `npm run format:check`      | Check formatting                                    |
 
-### Local data
+### Code Style & Git Hooks
 
-- `migrations/` for D1 schema
-- `.wrangler/` for local runtime state
-- no Docker layer here; Cloudflare-first project
+- **Formatter:** Prettier 3 (`printWidth: 100`, `singleQuote`, `semi`, `tabWidth: 2`) — see `.prettierrc.json`
+- **Linter:** ESLint 10 + `eslint-config-prettier` — see `eslint.config.js`
+- **Hooks:** `simple-git-hooks` + `lint-staged` (auto-installed via `prepare`):
+  - `pre-commit`: `prettier --write` + `eslint --fix`
+  - `pre-push`: `npm run check && npm run build`
+
+```bash
+npm run format        # manual format
+npm run format:check  # CI check
+# skip hooks if needed: SKIP_SIMPLE_GIT_HOOKS=1 git commit -m "..."
+```
+
+### Build Optimization
+
+- **Vite 8:** `esbuild` minify, `legalComments: none`, chunk splitting (`vendor` / `ui`), `reportCompressedSize: true`
+- **Worker:** `wrangler deploy` with bundled assets
 
 ---
 
-## ✅ Status Deploy (2026-08-27)
-
-- **Worker:** `bits-social-manager` (`ea4f6ea`) — live di `https://social.bits.co.id`
-- **D1:** `bits-social-manager` (`ea5a2ea6-6184-45da-87ed-f55404ae51cc`) — 1 user, 11 projects, 32 accounts (migrated dari `social-manager-db`)
-- **Secrets:** `JWT_SECRET` + `ENCRYPTION_KEY` (real production, migrated ke worker baru)
-- **Deploy:** `main` → GitHub Actions `Deploy to Cloudflare` (template-driven, `wrangler.jsonc` generated dari Secrets)
-- **Legacy:** `social-manager` (worker) + `social-manager-db` (D1) **sudah dihapus** (`wrangler delete`)
-
-> History rename `social-manager` → `bits-social-manager` (konsisten ala BITS-Nota) sudah selesai — D1 tidak bisa rename in-place, jadi create baru + `wrangler d1 export` → `wrangler d1 execute`.
-
----
-
-## 📡 API Endpoints
+## 📡 API Overview
 
 ### Auth
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
+| Method | Endpoint             | Description   |
+| ------ | -------------------- | ------------- |
 | `POST` | `/api/auth/register` | Register user |
-| `POST` | `/api/auth/login` | Login user |
-| `POST` | `/api/auth/logout` | Logout user |
+| `POST` | `/api/auth/login`    | Login user    |
+| `POST` | `/api/auth/logout`   | Logout user   |
 
 ### Profile
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/profile` | Get profile |
-| `PUT` | `/api/profile` | Update name, email, password |
+| Method | Endpoint       | Description    |
+| ------ | -------------- | -------------- |
+| `GET`  | `/api/profile` | Get profile    |
+| `PUT`  | `/api/profile` | Update profile |
 
 ### Projects
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/projects` | List projects |
-| `POST` | `/api/projects` | Create project |
-| `GET` | `/api/projects/{id}` | Get project |
-| `PUT` | `/api/projects/{id}` | Update project |
+| Method   | Endpoint             | Description    |
+| -------- | -------------------- | -------------- |
+| `GET`    | `/api/projects`      | List projects  |
+| `POST`   | `/api/projects`      | Create project |
+| `GET`    | `/api/projects/{id}` | Get project    |
+| `PUT`    | `/api/projects/{id}` | Update project |
 | `DELETE` | `/api/projects/{id}` | Delete project |
 
 ### Accounts
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/accounts` | List accounts across user's projects |
-| `GET` | `/api/accounts?projectId={id}` | List accounts for one project |
-| `POST` | `/api/accounts` | Create account |
-| `GET` | `/api/accounts/{id}` | Reveal single password |
-| `PUT` | `/api/accounts/{id}` | Update account |
-| `DELETE` | `/api/accounts/{id}` | Delete account |
+| Method   | Endpoint                       | Description                 |
+| -------- | ------------------------------ | --------------------------- |
+| `GET`    | `/api/accounts`                | List accounts               |
+| `GET`    | `/api/accounts?projectId={id}` | List accounts for a project |
+| `POST`   | `/api/accounts`                | Create account              |
+| `GET`    | `/api/accounts/{id}`           | Reveal password (decrypted) |
+| `PUT`    | `/api/accounts/{id}`           | Update account              |
+| `DELETE` | `/api/accounts/{id}`           | Delete account              |
+| `GET`    | `/api/health`                  | Health check                |
 
 ---
 
-## 🔐 Security Notes
+## 🔒 Security Notes
 
-- Password stored encrypted, not plain text
-- JWT required for protected routes
-- Project ownership checked before account access
-- Rate limit on auth endpoints
-- `passwordEncrypted` not returned on list endpoints
-- single-account reveal uses `Cache-Control: no-store`
-- CORS currently permissive for Workers deployment flow; lock it tighter if needed per domain
+- User passwords hashed with bcrypt (10 rounds)
+- Account passwords encrypted with AES-256-GCM via Web Crypto API
+- JWT required for protected routes; ownership checks on all project and account operations
+- `passwordEncrypted` omitted from list endpoints; single-account reveal uses `no-store` caching
+- Rate limiting on authentication endpoints
+- Security headers via `hono/secure-headers`
 
 ---
 
 ## 📄 License
 
-Distributed under MIT License. See `LICENSE`.
+MIT License. See `LICENSE`.
 
 ---
 
 <div align="center">
-  <strong>BITS Social Manager</strong> Developed with ❤️ by <a href="https://bits.co.id"><strong>Banten IT Solutions</strong></a>
+  <strong>BITS Social Manager</strong> · Developed with ❤️ by <a href="https://banten-it-solutions.github.io"><strong>Banten IT Solutions</strong></a>
 </div>

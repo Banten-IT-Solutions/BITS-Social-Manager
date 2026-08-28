@@ -1,9 +1,8 @@
-# Copy to `.dev.vars` for `wrangler dev` / Vite dev (gitignored).
-# Bindings DB / ASSETS are provisioned via wrangler.jsonc — no API keys needed.
-# Secrets untuk lokal juga taruh di sini (wrangler dev akan load otomatis).
+# Copy to .dev.vars for local development (gitignored).
+# Loaded automatically by `wrangler dev`.
 
 APP_URL=http://localhost:5173
 ENVIRONMENT=development
-# Untuk dev lokal, generate dummy secrets:
-# JWT_SECRET=dev-jwt-secret-min-32-chars-long-please-change
-# ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+# Generate for local dev:
+# JWT_SECRET=your-32-char-min-secret
+# ENCRYPTION_KEY=your-64-hex-char-key

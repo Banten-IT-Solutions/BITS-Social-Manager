@@ -37,7 +37,7 @@ export function MobileNav() {
       className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-800 bg-zinc-950 pb-[env(safe-area-inset-bottom)]"
     >
       <div className="flex items-center justify-around p-1.5">
-        {navItems.map((item) => {
+        {navItems.map(item => {
           const Icon = item.icon;
           const active = location.pathname.startsWith(item.to);
           return (
@@ -52,7 +52,12 @@ export function MobileNav() {
             </Link>
           );
         })}
-        <button type="button" onClick={handleLogout} aria-label="Sign out" className={cn(itemClass(false), 'hover:text-red-400')}>
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Sign out"
+          className={cn(itemClass(false), 'hover:text-red-400')}
+        >
           <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
           <span>Logout</span>
         </button>
