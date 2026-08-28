@@ -2,14 +2,34 @@
   "name": "bits-social-manager",
   "version": "1.0.0",
   "description": "Secure social account manager for organizing project credentials across teams",
-  "author": "Banten IT Solutions",
+  "keywords": [
+    "social",
+    "credentials",
+    "manager",
+    "cloudflare",
+    "hono",
+    "react",
+    "security"
+  ],
   "license": "MIT",
+  "type": "module",
+  "private": true,
+  "author": {
+    "name": "Banten IT Solutions",
+    "email": "admin@bits.co.id",
+    "url": "https://bits.co.id"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Banten-IT-Solutions/BITS-Social-Manager.git"
   },
-  "type": "module",
-  "private": true,
+  "bugs": {
+    "url": "https://github.com/Banten-IT-Solutions/BITS-Social-Manager/issues"
+  },
+  "homepage": "https://bits.co.id",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "cf:config": "node scripts/gen-wrangler.mjs",
     "dev": "npm run cf:config && vite",
