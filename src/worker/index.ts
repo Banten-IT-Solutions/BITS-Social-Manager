@@ -6,6 +6,22 @@ import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import projectsRoutes from './routes/projects';
 import accountsRoutes from './routes/accounts';
+import { openApiSpec } from './openapi';
+
+// Scalar UI via CDN — no npm dependency needed.
+// ponytail: swap to @scalar/hono-api-reference if CDN is a problem (air-gapped deploys).
+const docsHtml = `<!doctype html>
+<html>
+  <head>
+    <title>BITS Social Manager — API Docs</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script id="api-reference" data-url="/api/openapi.json"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>`;
 
 export interface Env {
   DB: D1Database;
@@ -55,6 +71,10 @@ app.route('/api/accounts', accountsRoutes);
 // Health
 app.get('/api/health', c => c.json({ status: 'ok', ts: Date.now() }));
 
+// API docs
+app.get('/api/openapi.json', c => c.json(openApiSpec));
+app.get('/docs', c => c.html(docsHtml));
+
 // 404 for unknown API
 app.all('/api/*', c => c.json({ error: 'Not found' }, 404));
 
@@ -62,8 +82,8 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // API routes → Hono
-    if (url.pathname.startsWith('/api/')) {
+    // API routes + docs → Hono
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/docs')) {
       return app.fetch(request, env, ctx);
     }
 
