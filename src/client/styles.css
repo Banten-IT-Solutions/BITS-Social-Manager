@@ -41,6 +41,63 @@
   --radius: 0.5rem;
 }
 
+/* Animation tokens (Tailwind v4: --animate-* -> animate-* utilities) */
+@theme {
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float-a: float-a 20s ease-in-out infinite alternate;
+  --animate-float-b: float-b 26s ease-in-out infinite alternate;
+  --animate-rotate-slower: rotate-slow 48s linear infinite;
+  --animate-shimmer: shimmer 7s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes float-a {
+    from {
+      transform: translate3d(-6%, -4%, 0) scale(1);
+    }
+    to {
+      transform: translate3d(9%, 7%, 0) scale(1.18);
+    }
+  }
+  @keyframes float-b {
+    from {
+      transform: translate3d(6%, 8%, 0) scale(1.12);
+    }
+    to {
+      transform: translate3d(-8%, -6%, 0) scale(0.94);
+    }
+  }
+  @keyframes rotate-slow {
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  @keyframes shimmer {
+    to {
+      background-position: 200% center;
+    }
+  }
+}
+
 * {
   box-sizing: border-box;
   border-color: #27272a;

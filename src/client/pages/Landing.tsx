@@ -1,114 +1,135 @@
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, FolderKanban, LayoutGrid, KeyRound } from 'lucide-react';
+import { Shield, Lock, FolderKanban, LayoutGrid, KeyRound, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui';
 
-const PLATFORMS =
-  'Gmail, YouTube, Facebook, Instagram, Threads, WhatsApp, Telegram, TikTok, Shopee, X, LinkedIn, GitHub';
-
-const features = [
-  {
-    icon: Lock,
-    title: 'Encrypted at rest',
-    description:
-      'Passwords are encrypted server-side and only revealed on demand — never stored in plain text.',
-  },
-  {
-    icon: FolderKanban,
-    title: 'Project-based',
-    description: 'Group accounts per client or project, so every team stays on the same page.',
-  },
-  {
-    icon: LayoutGrid,
-    title: '12 platforms',
-    description: `From ${PLATFORMS.split(', ').slice(0, 3).join(', ')} to more — all your handles in one place.`,
-  },
+const highlights = [
+  { icon: Lock, label: 'Encrypted at rest' },
+  { icon: FolderKanban, label: 'Project-based' },
+  { icon: LayoutGrid, label: '12 platforms' },
 ];
 
 export function LandingPage() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
-      {/* Header */}
-      <header className="border-b border-zinc-800/60">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="rounded-lg bg-zinc-900 border border-zinc-800 p-2">
-              <Shield className="h-5 w-5 text-zinc-400" />
-            </div>
-            <span className="font-semibold tracking-tight">BITS Social Manager</span>
-          </div>
-          <nav className="flex items-center gap-2">
-            <Button size="sm" variant="primary" onClick={() => navigate('/register')}>
-              Get started
-            </Button>
-          </nav>
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+      {/* ── Animated background ── */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        {/* Fading grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgb(63_63_70/0.16)_1px,transparent_1px),linear-gradient(to_bottom,rgb(63_63_70/0.16)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_45%,black,transparent)]" />
+        {/* Drifting glow orbs */}
+        <div className="absolute -top-40 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-violet-600/25 blur-3xl motion-safe:animate-float-a" />
+        <div className="absolute -bottom-36 -left-28 h-[28rem] w-[28rem] rounded-full bg-fuchsia-600/15 blur-3xl motion-safe:animate-float-b" />
+        <div
+          className="absolute right-[-9rem] top-1/4 h-[24rem] w-[24rem] rounded-full bg-indigo-500/15 blur-3xl motion-safe:animate-float-b"
+          style={{ animationDelay: '-10s' }}
+        />
+        {/* Slow rotating conic beam behind the headline */}
+        <div className="absolute left-1/2 top-[45%] h-[44rem] w-[44rem] -translate-x-1/2 -translate-y-1/2 opacity-50 motion-safe:animate-rotate-slower">
+          <div className="h-full w-full rounded-full bg-[conic-gradient(from_0deg,transparent_0%,rgb(139_92_246/0.22)_10%,transparent_22%)]" />
         </div>
+        {/* Vignette to keep text readable */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgb(9_9_11/0.9)_100%)]" />
+      </div>
+
+      {/* ── Top bar ── */}
+      <header
+        className="relative z-10 flex h-16 shrink-0 items-center justify-between px-5 sm:px-8 motion-safe:animate-fade-in"
+        style={{ animationDelay: '0.05s' }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-2 backdrop-blur">
+            <Shield className="h-5 w-5 text-violet-400" />
+          </div>
+          <span className="font-semibold tracking-tight">BITS Social Manager</span>
+        </div>
+        <a
+          href="/docs"
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm text-zinc-500 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 rounded px-1.5 py-1"
+        >
+          API docs
+        </a>
       </header>
 
-      {/* Hero */}
-      <main className="flex-1">
-        <section className="relative max-w-3xl mx-auto px-4 pt-24 pb-20 text-center">
-          <div
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-72 pointer-events-none"
-            style={{
-              background: 'radial-gradient(60% 60% at 50% 0%, rgb(63 63 70 / 0.4), transparent)',
-            }}
-          />
-          <div className="relative animate-fade-in space-y-6">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-400">
-              <KeyRound className="h-3.5 w-3.5" />
-              Secure social media account management
-            </span>
-            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-balance">
-              Every account.
-              <br />
-              <span className="text-zinc-400">One secure vault.</span>
-            </h1>
-            <p className="text-zinc-400 text-lg text-balance max-w-xl mx-auto">
-              Store, organize, and share your team&apos;s social media credentials — encrypted per
-              project, accessible only to you.
-            </p>
-            <div className="flex items-center justify-center pt-2">
-              <Button size="lg" variant="primary" onClick={() => navigate('/register')}>
-                Create free account
-              </Button>
-            </div>
-          </div>
-        </section>
+      {/* ── Center stage ── */}
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4">
+        <div className="max-w-3xl space-y-6 text-center sm:space-y-7">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/70 px-3 py-1 text-xs text-zinc-400 backdrop-blur motion-safe:animate-rise"
+            style={{ animationDelay: '0.1s' }}
+          >
+            <KeyRound className="h-3.5 w-3.5 text-violet-400" />
+            Secure social media account management
+          </span>
 
-        {/* Features */}
-        <section className="max-w-5xl mx-auto px-4 pb-24">
-          <div className="grid gap-4 md:grid-cols-3">
-            {features.map(f => (
-              <div
-                key={f.title}
-                className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 space-y-3"
-              >
-                <div className="w-fit rounded-lg bg-zinc-900 border border-zinc-800 p-2">
-                  <f.icon className="h-5 w-5 text-zinc-400" />
-                </div>
-                <h2 className="font-medium">{f.title}</h2>
-                <p className="text-sm text-zinc-500 leading-relaxed">{f.description}</p>
-              </div>
-            ))}
+          <h1
+            className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl motion-safe:animate-rise"
+            style={{ animationDelay: '0.2s' }}
+          >
+            Every account.
+            <br />
+            <span className="bg-[linear-gradient(90deg,rgb(196_181_253),rgb(244_244_245),rgb(139_92_246),rgb(196_181_253))] bg-[length:200%_auto] bg-clip-text text-transparent motion-safe:animate-shimmer">
+              One secure vault.
+            </span>
+          </h1>
+
+          <p
+            className="mx-auto max-w-xl text-balance text-zinc-400 sm:text-lg motion-safe:animate-rise"
+            style={{ animationDelay: '0.3s' }}
+          >
+            Store, organize, and share your team&apos;s social media credentials — encrypted per
+            project, accessible only to you.
+          </p>
+
+          <div
+            className="flex items-center justify-center gap-4 motion-safe:animate-rise"
+            style={{ animationDelay: '0.4s' }}
+          >
+            <Button size="lg" variant="primary" onClick={() => navigate('/register')}>
+              Create free account
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
-        </section>
+          <p
+            className="text-sm text-zinc-500 motion-safe:animate-rise"
+            style={{ animationDelay: '0.48s' }}
+          >
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="text-zinc-300 underline-offset-4 transition-colors hover:text-zinc-100 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 rounded"
+            >
+              Sign in
+            </button>
+          </p>
+
+          {/* Feature chips */}
+          <ul
+            className="flex flex-wrap items-center justify-center gap-2 pt-2 motion-safe:animate-rise"
+            style={{ animationDelay: '0.56s' }}
+          >
+            {highlights.map(f => (
+              <li
+                key={f.label}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3.5 py-1.5 text-sm text-zinc-400 backdrop-blur"
+              >
+                <f.icon className="h-3.5 w-3.5 text-violet-400" aria-hidden="true" />
+                {f.label}
+              </li>
+            ))}
+          </ul>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-800/60">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between text-sm text-zinc-500">
-          <span>© {new Date().getFullYear()} Banten IT Solutions</span>
-          <a
-            href="/docs"
-            className="hover:text-zinc-300 underline-offset-4 hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            API docs
-          </a>
-        </div>
+      {/* ── Bottom bar ── */}
+      <footer
+        className="relative z-10 flex h-14 shrink-0 items-center justify-between px-5 text-sm text-zinc-600 sm:px-8 motion-safe:animate-fade-in"
+        style={{ animationDelay: '0.7s' }}
+      >
+        <span>© {new Date().getFullYear()} Banten IT Solutions</span>
+        <span className="hidden sm:block">No scroll required. Everything at a glance.</span>
       </footer>
     </div>
   );
