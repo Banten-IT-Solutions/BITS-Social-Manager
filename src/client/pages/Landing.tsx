@@ -1,6 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, FolderKanban, LayoutGrid, KeyRound, ArrowRight } from 'lucide-react';
-import { Button } from '../components/ui';
+import {
+  Shield,
+  Lock,
+  FolderKanban,
+  LayoutGrid,
+  KeyRound,
+  ArrowRight,
+  LogIn,
+  UserPlus,
+  BookOpen,
+} from 'lucide-react';
+import { Button, Tooltip } from '../components/ui';
 
 const highlights = [
   { icon: Lock, label: 'Encrypted at rest' },
@@ -42,14 +52,39 @@ export function LandingPage() {
           </div>
           <span className="font-semibold tracking-tight">BITS Social Manager</span>
         </div>
-        <a
-          href="/docs"
-          target="_blank"
-          rel="noreferrer"
-          className="text-sm text-zinc-500 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 rounded px-1.5 py-1"
-        >
-          API docs
-        </a>
+        <nav className="flex items-center gap-1" aria-label="Quick links">
+          <Tooltip content="Sign in" side="bottom">
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              aria-label="Sign in"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+            >
+              <LogIn className="h-[18px] w-[18px]" aria-hidden="true" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Create account" side="bottom">
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              aria-label="Create account"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+            >
+              <UserPlus className="h-[18px] w-[18px]" aria-hidden="true" />
+            </button>
+          </Tooltip>
+          <Tooltip content="API documentation" side="bottom">
+            <a
+              href="/docs"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="API documentation"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+            >
+              <BookOpen className="h-[18px] w-[18px]" aria-hidden="true" />
+            </a>
+          </Tooltip>
+        </nav>
       </header>
 
       {/* ── Center stage ── */}
