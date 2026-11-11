@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  CalendarClock,
+  Calendar,
   FolderOpen,
   KeyRound,
   LayoutGrid,
   ChevronRight,
   Plus,
   TrendingUp,
-  Calendar,
 } from 'lucide-react';
 import { api } from '../lib/api';
-import type { Project, SocialAccount, Platform } from '../lib/types';
+import type { Post, Project, SocialAccount, Platform } from '../lib/types';
 import { PlatformIcon, PLATFORM_COLORS, PLATFORM_BG } from '../components/PlatformIcon';
+import { UpcomingPostCard } from '../components/PostCard';
+import { PostPreviewDialog } from '../components/PostPreviewDialog';
 import { Badge, Button, Alert } from '../components/ui';
 import { cn, formatDate } from '../lib/utils';
 
@@ -23,6 +26,8 @@ export function OverviewPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [previewPost, setPreviewPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +35,15 @@ export function OverviewPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [p, a] = await Promise.all([api.projects.list(), api.accounts.list()]);
+        const [p, a, content] = await Promise.all([
+          api.projects.list(),
+          api.accounts.list(),
+          api.posts.list(),
+        ]);
         if (!cancelled) {
           setProjects(p.projects);
           setAccounts(a.accounts);
+          setPosts(content.posts);
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load dashboard');
@@ -63,12 +73,32 @@ export function OverviewPage() {
     [projects]
   );
 
+  const upcoming = useMemo(
+    () =>
+      posts
+        .filter(
+          post =>
+            post.status === 'scheduled' &&
+            post.scheduledAt &&
+            new Date(post.scheduledAt).getTime() >= Date.now()
+        )
+        .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime())
+        .slice(0, 3),
+    [posts]
+  );
+
+  const scheduledCount = useMemo(
+    () => posts.filter(post => post.status === 'scheduled').length,
+    [posts]
+  );
+
   const maxCount = platformCounts[0]?.[1] ?? 0;
 
   const stats = [
     { label: 'Projects', value: projects.length, icon: FolderOpen },
     { label: 'Accounts', value: accounts.length, icon: KeyRound },
     { label: 'Platforms', value: platformCounts.length, icon: LayoutGrid },
+    { label: 'Scheduled', value: scheduledCount, icon: CalendarClock },
   ];
 
   return (
@@ -84,7 +114,9 @@ export function OverviewPage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Dashboard</h1>
-            <p className="mt-1 text-sm text-zinc-400">Overview of your workspace</p>
+            <p className="mt-1 text-sm text-zinc-400">
+              Projects, accounts, and upcoming content at a glance.
+            </p>
           </div>
         </div>
       </header>
@@ -92,8 +124,8 @@ export function OverviewPage() {
       {error && <Alert variant="destructive">{error}</Alert>}
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-3" aria-hidden="true">
-          {[1, 2, 3].map(i => (
+        <div className="grid grid-cols-2 gap-4 xl:grid-cols-4" aria-hidden="true">
+          {[1, 2, 3, 4].map(i => (
             <div
               key={i}
               className="h-24 rounded-xl border border-zinc-800 bg-zinc-900/30 animate-pulse motion-reduce:animate-none"
@@ -103,7 +135,7 @@ export function OverviewPage() {
       ) : (
         <>
           {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
             {stats.map(s => (
               <div
                 key={s.label}
@@ -121,6 +153,40 @@ export function OverviewPage() {
               </div>
             ))}
           </div>
+
+          {upcoming.length > 0 && (
+            <section aria-labelledby="dashboard-upcoming-heading" className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <h2
+                    id="dashboard-upcoming-heading"
+                    className="text-sm font-semibold text-zinc-200"
+                  >
+                    Upcoming content
+                  </h2>
+                  <Badge variant="secondary">{upcoming.length}</Badge>
+                </div>
+                <Link
+                  to="/content"
+                  className="rounded text-xs text-zinc-500 underline-offset-4 transition-colors hover:text-zinc-200 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+                >
+                  View content plan
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {upcoming.map(post => (
+                  <UpcomingPostCard
+                    key={post.id}
+                    post={post}
+                    actionLabel={post.driveFileId ? 'Preview' : 'Open'}
+                    onOpen={post =>
+                      post.driveFileId ? setPreviewPost(post) : navigate('/content')
+                    }
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/30 py-16 space-y-3">
@@ -220,6 +286,8 @@ export function OverviewPage() {
           )}
         </>
       )}
+
+      <PostPreviewDialog post={previewPost} onClose={() => setPreviewPost(null)} />
     </div>
   );
 }

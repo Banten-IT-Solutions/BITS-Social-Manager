@@ -115,5 +115,13 @@ test.describe('Content plan', () => {
     });
     await expect(page.getByText('Scheduled').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Upcoming' })).toBeVisible();
+
+    // The dashboard mirrors the same upcoming content card.
+    await page.goto('/dashboard');
+    await expect(page.getByRole('heading', { name: 'Upcoming content' })).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.getByRole('button', { name: 'Open Video peluncuran produk' })).toBeVisible();
+    await expect(page.getByText('Scheduled', { exact: true }).first()).toBeVisible();
   });
 });

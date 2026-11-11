@@ -287,7 +287,7 @@ npm run format:check  # CI check
 | `/privacy`      | Privacy Policy (Landing-style layout)                         | Public    |
 | `/login`        | Sign in                                                       | Public    |
 | `/register`     | Create account                                                | Public    |
-| `/dashboard`    | Workspace overview (stats, recent projects, platform usage)   | Protected |
+| `/dashboard`    | Workspace overview (stats, upcoming content, recent projects) | Protected |
 | `/projects`     | Project list + create/edit/delete                             | Protected |
 | `/projects/:id` | Project detail + social accounts                              | Protected |
 | `/content`      | Content plan: schedule posts, upload videos, preview          | Protected |

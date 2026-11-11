@@ -19,6 +19,8 @@ import { api, type PostInput } from '../lib/api';
 import type { DriveConnectionInfo, Post, PostStatus, SocialAccount } from '../lib/types';
 import { POST_STATUSES } from '../lib/types';
 import { PlatformIcon, PLATFORM_COLORS, PLATFORM_BG } from '../components/PlatformIcon';
+import { DriveThumbnail, UpcomingPostCard } from '../components/PostCard';
+import { PostPreviewDialog } from '../components/PostPreviewDialog';
 import {
   Alert,
   Badge,
@@ -34,7 +36,7 @@ import {
   Input,
   Textarea,
 } from '../components/ui';
-import { cn } from '../lib/utils';
+import { cn, formatDateTime } from '../lib/utils';
 
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
@@ -54,13 +56,6 @@ const STATUS_STYLES: Record<PostStatus, string> = {
 
 const HEADER_CTA =
   'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-[background-color,box-shadow,transform] hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
-
-function formatDateTime(iso: string | null): string {
-  if (!iso) return 'Not scheduled';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return 'Invalid date';
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
 
 function relativeTime(iso: string | null): string | null {
   if (!iso) return null;
@@ -101,57 +96,6 @@ function StatusBadge({ status }: { status: PostStatus }) {
     >
       {STATUS_LABELS[status]}
     </span>
-  );
-}
-
-function DriveThumbnail({ post, className }: { post: Post; className?: string }) {
-  const thumbnailUrl = post.driveFileId
-    ? `https://drive.google.com/thumbnail?id=${post.driveFileId}&sz=w480`
-    : null;
-
-  return (
-    <div
-      className={cn(
-        'relative flex items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-gradient-to-br from-zinc-800 to-zinc-900',
-        className
-      )}
-    >
-      <Film className="h-5 w-5 text-zinc-600" aria-hidden="true" />
-      {thumbnailUrl && (
-        <>
-          {/* Blurred cover fills the 16:9 media box, while the sharp frame is
-              contained so 9:16 and 1:1 videos stay uncropped. Card heights stay
-              identical regardless of the source aspect ratio. */}
-          <img
-            src={thumbnailUrl}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-lg"
-            onError={event => {
-              event.currentTarget.style.display = 'none';
-            }}
-          />
-          <img
-            src={thumbnailUrl}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="absolute inset-0 z-10 h-full w-full object-contain"
-            onError={event => {
-              event.currentTarget.style.display = 'none';
-            }}
-          />
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 z-20 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30"
-          >
-            <Play className="h-5 w-5 text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
-          </span>
-        </>
-      )}
-    </div>
   );
 }
 
@@ -519,65 +463,6 @@ function DeletePostDialog({
   );
 }
 
-function PreviewDialog({ post, onClose }: { post: Post | null; onClose: () => void }) {
-  return (
-    <Dialog open={!!post} onOpenChange={onClose} className="max-w-3xl">
-      <DialogContent>
-        <DialogHeader icon={<Play className="h-4 w-4" />}>
-          <DialogTitle>{post?.title}</DialogTitle>
-          <DialogDescription>
-            {post?.account ? `${post.account.accountName} · ${post.account.platform} · ` : ''}
-            {formatDateTime(post?.scheduledAt ?? null)}
-          </DialogDescription>
-        </DialogHeader>
-
-        {post?.driveFileId ? (
-          <div className="aspect-video overflow-hidden rounded-lg border border-zinc-800 bg-black">
-            <iframe
-              src={`https://drive.google.com/file/d/${post.driveFileId}/preview`}
-              title={`Video preview: ${post.title}`}
-              className="h-full w-full"
-              allow="autoplay; fullscreen"
-              allowFullScreen
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-10 text-center">
-            <Film className="h-8 w-8 text-zinc-700" aria-hidden="true" />
-            <p className="text-sm text-zinc-400">No video attached to this post.</p>
-            {post?.attachmentUrl && (
-              <a href={post.attachmentUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="mt-1">
-                  <ExternalLink className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                  Open video link
-                </Button>
-              </a>
-            )}
-          </div>
-        )}
-
-        {post?.description && (
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-400">
-            {post.description}
-          </p>
-        )}
-
-        <DialogFooter>
-          {post?.attachmentUrl && (
-            <a href={post.attachmentUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline">
-                <ExternalLink className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                Open in Drive
-              </Button>
-            </a>
-          )}
-          <Button onClick={onClose}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function ContentPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
@@ -754,50 +639,12 @@ export function ContentPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {upcoming.map(post => (
-              <button
+              <UpcomingPostCard
                 key={post.id}
-                type="button"
-                onClick={() => (post.driveFileId ? setPreviewPost(post) : openEdit(post))}
-                className="group flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 text-left transition-[border-color,background-color] hover:border-zinc-700 hover:bg-zinc-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40 motion-reduce:transition-none"
-                aria-label={post.driveFileId ? `Preview ${post.title}` : `Edit ${post.title}`}
-              >
-                <DriveThumbnail
-                  post={post}
-                  className="aspect-video w-full shrink-0 rounded-none border-0 border-b"
-                />
-                <div className="flex flex-1 flex-col gap-2 p-3">
-                  {/* Reserve two lines so every card keeps the same height; long
-                      titles are clamped and exposed in full via the tooltip. */}
-                  <p
-                    className="line-clamp-2 min-h-10 text-sm font-medium leading-5 text-zinc-100"
-                    title={post.title}
-                  >
-                    {post.title}
-                  </p>
-                  <div className="mt-auto flex items-center gap-2 text-xs text-zinc-500">
-                    <span
-                      className={cn(
-                        'flex h-6 w-6 shrink-0 items-center justify-center rounded',
-                        PLATFORM_BG[post.account?.platform ?? 'TikTok']
-                      )}
-                    >
-                      <PlatformIcon
-                        platform={post.account?.platform ?? 'TikTok'}
-                        className={cn(
-                          'h-3.5 w-3.5',
-                          PLATFORM_COLORS[post.account?.platform ?? 'TikTok']
-                        )}
-                      />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate" title={post.account?.accountName}>
-                      {post.account?.accountName}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap">
-                      {formatDateTime(post.scheduledAt)}
-                    </span>
-                  </div>
-                </div>
-              </button>
+                post={post}
+                actionLabel={post.driveFileId ? 'Preview' : 'Edit'}
+                onOpen={post => (post.driveFileId ? setPreviewPost(post) : openEdit(post))}
+              />
             ))}
           </div>
         </section>
@@ -1005,7 +852,7 @@ export function ContentPage() {
         onClose={() => setDeletePost(null)}
         onDeleted={handleDeleted}
       />
-      <PreviewDialog post={previewPost} onClose={() => setPreviewPost(null)} />
+      <PostPreviewDialog post={previewPost} onClose={() => setPreviewPost(null)} />
     </div>
   );
 }
