@@ -38,9 +38,6 @@ export function LandingPage() {
             <span className="font-semibold tracking-tight">BITS Social Manager</span>
           </div>
           <nav className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate('/login')}>
-              Sign in
-            </Button>
             <Button size="sm" variant="primary" onClick={() => navigate('/register')}>
               Get started
             </Button>
@@ -72,12 +69,9 @@ export function LandingPage() {
               Store, organize, and share your team&apos;s social media credentials — encrypted per
               project, accessible only to you.
             </p>
-            <div className="flex items-center justify-center gap-3 pt-2">
+            <div className="flex items-center justify-center pt-2">
               <Button size="lg" variant="primary" onClick={() => navigate('/register')}>
                 Create free account
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('/login')}>
-                Sign in
               </Button>
             </div>
           </div>
