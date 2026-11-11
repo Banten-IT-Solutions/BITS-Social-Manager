@@ -174,9 +174,6 @@ function AccountModal({
         <DialogHeader icon={<KeyRound className="h-4 w-4" />}>
           <DialogTitle>{isEdit ? 'Edit account' : 'Add social account'}</DialogTitle>
         </DialogHeader>
-        <DialogDescription className="mb-2.5">
-          {isEdit ? 'Update account details.' : 'Add a new social media account to this project.'}
-        </DialogDescription>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           {error && <Alert variant="destructive">{error}</Alert>}
           <FormField label="Platform" error={errors.platform?.message} required>

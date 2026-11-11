@@ -102,9 +102,6 @@ function ProjectModal({
         <DialogHeader icon={<FolderOpen className="h-4 w-4" />}>
           <DialogTitle>{project ? 'Edit project' : 'New project'}</DialogTitle>
         </DialogHeader>
-        <DialogDescription className="mb-3">
-          {project ? 'Update project details.' : 'Create a container for your social accounts.'}
-        </DialogDescription>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && <Alert variant="destructive">{error}</Alert>}
           <FormField label="Project name" error={errors.name?.message} required>
