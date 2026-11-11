@@ -39,6 +39,7 @@
     "cf:typegen": "wrangler types",
     "db:migrate:local": "npm run cf:config && { [ -f .env ] && . ./.env || true; } && { [ -n \"$D1_DATABASE_NAME\" ] || { echo 'D1_DATABASE_NAME belum diset' && exit 1; }; } && wrangler d1 migrations apply \"$D1_DATABASE_NAME\" --local",
     "db:migrate:remote": "npm run cf:config && { [ -f .env ] && . ./.env || true; } && { [ -n \"$D1_DATABASE_NAME\" ] || { echo 'D1_DATABASE_NAME belum diset' && exit 1; }; } && wrangler d1 migrations apply \"$D1_DATABASE_NAME\" --remote",
+    "db:seed:local": "npm run cf:config && node scripts/seed-content.mjs",
     "db:generate": "drizzle-kit generate",
     "test": "vitest run",
     "test:e2e": "playwright test",

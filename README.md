@@ -58,7 +58,8 @@ BITS-Social-Manager/
 │   ├── 0001_init.sql         # D1 schema
 │   └── 0002_content_plan.sql # posts + drive_connections + account folder id
 ├── scripts/
-│   └── gen-wrangler.mjs      # generates wrangler.jsonc from template
+│   ├── gen-wrangler.mjs      # generates wrangler.jsonc from template
+│   └── seed-content.mjs      # seeds local sample Content Plan posts
 ├── src/
 │   ├── client/               # React SPA
 │   │   ├── components/       # layout, guards, UI primitives, AnimatedBackground
@@ -243,6 +244,7 @@ wrangler.jsonc           (generated, gitignored)
 | `npm run db:generate`       | Generate Drizzle migration                          |
 | `npm run db:migrate:local`  | Apply D1 migrations locally                         |
 | `npm run db:migrate:remote` | Apply D1 migrations remotely                        |
+| `npm run db:seed:local`     | Seed sample Content Plan posts (local D1 only)      |
 | `npm run test`              | Run unit tests (Vitest)                             |
 | `npm run test:e2e`          | Run e2e tests (Playwright)                          |
 | `npm run type-check`        | TypeScript checks (client + worker)                 |
@@ -250,6 +252,10 @@ wrangler.jsonc           (generated, gitignored)
 | `npm run lint`              | ESLint                                              |
 | `npm run format`            | Format with Prettier                                |
 | `npm run format:check`      | Check formatting                                    |
+
+> **Sample content (local only):** `npm run db:seed:local -- --email you@example.com` inserts five
+> idempotent demo posts (3 scheduled, 1 published, 1 draft) for accounts that already exist in the
+> local D1 database. It is never executed against remote D1 or during deploy.
 
 ### Code Style & Git Hooks
 
