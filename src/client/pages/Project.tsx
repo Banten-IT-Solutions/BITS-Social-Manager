@@ -168,7 +168,7 @@ function AccountModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-full">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit account' : 'Add social account'}</DialogTitle>
           <DialogDescription>

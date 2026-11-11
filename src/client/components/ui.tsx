@@ -301,16 +301,16 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-6">
       <div
         aria-hidden="true"
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
         onClick={() => onOpenChange(false)}
       />
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-10 w-full max-w-md max-h-dvh overflow-y-auto overscroll-contain animate-fade-in"
+        className="relative z-10 max-h-full w-full max-w-md overflow-y-auto overscroll-contain motion-safe:animate-rise"
       >
         {children}
       </div>
@@ -320,7 +320,10 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
 
 export const DialogContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('rounded-lg border border-zinc-800 bg-zinc-950 p-6 shadow-xl', className)}
+    className={cn(
+      'rounded-xl border border-zinc-800 bg-zinc-900/95 p-6 shadow-2xl shadow-black/50 ring-1 ring-white/5 backdrop-blur-xl',
+      className
+    )}
     {...props}
   />
 );

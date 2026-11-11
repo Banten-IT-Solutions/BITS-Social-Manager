@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { User, Lock, Mail, Save, BookOpen, ExternalLink } from 'lucide-react';
+import { User, Lock, Mail, Save } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import {
@@ -207,36 +207,6 @@ export function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Resources */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-zinc-400" />
-            <CardTitle>Resources</CardTitle>
-          </div>
-          <CardDescription>
-            References for developers integrating with this platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <a
-            href="/docs"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm transition-colors hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
-          >
-            <span className="flex items-center gap-2.5">
-              <BookOpen className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-              <span>
-                <span className="font-medium text-zinc-100">API Documentation</span>
-                <span className="ml-2 text-zinc-500">REST API reference — interactive</span>
-              </span>
-            </span>
-            <ExternalLink className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
-          </a>
-        </CardContent>
-      </Card>
     </div>
   );
 }
