@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, FolderKanban, LayoutGrid, ArrowRight, KeyRound } from 'lucide-react';
+import { Shield, Lock, FolderKanban, LayoutGrid, KeyRound } from 'lucide-react';
 import { Button } from '../components/ui';
 
 const PLATFORMS =
@@ -37,13 +37,12 @@ export function LandingPage() {
             </div>
             <span className="font-semibold tracking-tight">BITS Social Manager</span>
           </div>
-          <nav className="flex items-center gap-1">
-            <Button variant="ghost" onClick={() => navigate('/login')}>
+          <nav className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => navigate('/login')}>
               Sign in
             </Button>
-            <Button size="sm" onClick={() => navigate('/register')}>
+            <Button size="sm" variant="primary" onClick={() => navigate('/register')}>
               Get started
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Button>
           </nav>
         </div>
@@ -74,9 +73,8 @@ export function LandingPage() {
               project, accessible only to you.
             </p>
             <div className="flex items-center justify-center gap-3 pt-2">
-              <Button size="lg" onClick={() => navigate('/register')}>
+              <Button size="lg" variant="primary" onClick={() => navigate('/register')}>
                 Create free account
-                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate('/login')}>
                 Sign in

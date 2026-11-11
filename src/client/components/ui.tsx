@@ -4,7 +4,7 @@ import { cn } from '../lib/utils';
 
 // Button
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
+  variant?: 'default' | 'primary' | 'destructive' | 'outline' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   loading?: boolean;
 }
@@ -18,6 +18,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50';
     const variants = {
       default: 'bg-zinc-100 text-zinc-900 shadow hover:bg-zinc-200',
+      primary: 'bg-violet-600 text-white shadow hover:bg-violet-700 focus-visible:ring-violet-400',
       destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
       outline: 'border border-zinc-700 bg-transparent text-zinc-100 shadow-sm hover:bg-zinc-800',
       ghost: 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100',
