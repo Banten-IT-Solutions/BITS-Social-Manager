@@ -84,6 +84,13 @@ test.describe('Content plan', () => {
     await expect(page.getByRole('button', { name: 'New post' })).toBeVisible();
   });
 
+  test('google oauth callback route is mounted at /callback', async ({ request }) => {
+    const res = await request.get('/api/integrations/google/callback', { maxRedirects: 0 });
+    expect(res.status()).toBe(302);
+    const location = res.headers()['location'] ?? '';
+    expect(location).toContain('/profile?drive=error&reason=missing_code');
+  });
+
   test('creates a scheduled post for a social account', async ({ page }) => {
     // Project + account are prerequisites.
     await page.goto('/projects');

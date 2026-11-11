@@ -72,7 +72,7 @@ driveRouter.delete('/', async c => {
 /** Public OAuth callback — Google redirects the browser here (no bearer token). */
 export const googleCallbackRouter = new Hono<{ Bindings: Env; Variables: Variables }>();
 
-googleCallbackRouter.get('/', async c => {
+googleCallbackRouter.get('/callback', async c => {
   const url = new URL(c.req.url);
   const origin = url.origin;
   const fail = (reason: string) =>
