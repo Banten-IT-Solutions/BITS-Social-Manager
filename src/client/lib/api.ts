@@ -1,4 +1,4 @@
-import type { Project, SocialAccount, User } from './types';
+import type { DriveConnectionInfo, Post, PostStatus, Project, SocialAccount, User } from './types';
 import { useAuthStore } from '../store/auth';
 
 const BASE = '/api';
@@ -9,8 +9,10 @@ function getToken(): string | null {
 
 async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
+  // Multipart bodies must let the browser set the boundary itself.
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string>),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -103,4 +105,37 @@ export const api = {
       }),
     delete: (id: string) => req<{ success: boolean }>(`/accounts/${id}`, { method: 'DELETE' }),
   },
+  drive: {
+    status: () => req<{ connection: DriveConnectionInfo | null }>('/drive'),
+    connect: () => req<{ url: string }>('/drive/connect', { method: 'POST' }),
+    disconnect: () => req<{ success: boolean }>('/drive', { method: 'DELETE' }),
+  },
+  posts: {
+    list: () => req<{ posts: Post[] }>('/posts'),
+    listByAccount: (accountId: string) => req<{ posts: Post[] }>(`/accounts/${accountId}/posts`),
+    create: (accountId: string, body: PostInput | FormData) =>
+      req<{ post: Post }>(`/accounts/${accountId}/posts`, {
+        method: 'POST',
+        body: body instanceof FormData ? body : JSON.stringify(body),
+      }),
+    update: (accountId: string, postId: string, body: PostInput | FormData) =>
+      req<{ post: Post }>(`/accounts/${accountId}/posts/${postId}`, {
+        method: 'PUT',
+        body: body instanceof FormData ? body : JSON.stringify(body),
+      }),
+    remove: (accountId: string, postId: string) =>
+      req<{ success: boolean }>(`/accounts/${accountId}/posts/${postId}`, {
+        method: 'DELETE',
+      }),
+  },
 };
+
+export interface PostInput {
+  title?: string;
+  description?: string | null;
+  scheduledAt?: string | null;
+  status?: PostStatus;
+  attachmentUrl?: string | null;
+  /** Destination account on update (moves the Drive file between folders). */
+  accountId?: string;
+}

@@ -2,9 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { User, Lock, Mail, Save } from 'lucide-react';
+import { User, Lock, Mail, Save, HardDrive, Unplug, CheckCircle2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
+import type { DriveConnectionInfo } from '../lib/types';
 import {
   Button,
   Input,
@@ -16,6 +17,12 @@ import {
   CardDescription,
   CardContent,
   Separator,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '../components/ui';
 
 const profileSchema = z.object({
@@ -43,6 +50,65 @@ export function ProfilePage() {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwError, setPwError] = useState<string | null>(null);
+
+  // Google Drive connection (one per app user)
+  const [drive, setDrive] = useState<DriveConnectionInfo | null>(null);
+  const [driveLoading, setDriveLoading] = useState(true);
+  const [driveError, setDriveError] = useState<string | null>(null);
+  const [driveNotice, setDriveNotice] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get('drive');
+    if (result === 'connected') {
+      setDriveNotice('Google Drive connected successfully.');
+    } else if (result === 'error') {
+      const reason = params.get('reason');
+      setDriveError(
+        reason
+          ? `Could not connect Google Drive: ${decodeURIComponent(reason).replace(/_/g, ' ')}`
+          : 'Could not connect Google Drive.'
+      );
+    }
+    if (result) window.history.replaceState({}, '', window.location.pathname);
+
+    api.drive
+      .status()
+      .then(res => setDrive(res.connection))
+      .catch(e => setDriveError(e instanceof Error ? e.message : 'Failed to load Drive status'))
+      .finally(() => setDriveLoading(false));
+  }, []);
+
+  const connectDrive = async () => {
+    setDriveError(null);
+    setDriveNotice(null);
+    setConnecting(true);
+    try {
+      const { url } = await api.drive.connect();
+      window.location.assign(url);
+    } catch (e) {
+      setDriveError(e instanceof Error ? e.message : 'Failed to start Google Drive connection');
+      setConnecting(false);
+    }
+  };
+
+  const disconnectDrive = async () => {
+    setDisconnecting(true);
+    setDriveError(null);
+    try {
+      await api.drive.disconnect();
+      setDrive(null);
+      setConfirmDisconnect(false);
+      setDriveNotice('Google Drive disconnected. Your files and folders remain in Drive.');
+    } catch (e) {
+      setDriveError(e instanceof Error ? e.message : 'Failed to disconnect Google Drive');
+    } finally {
+      setDisconnecting(false);
+    }
+  };
 
   const profileForm = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -207,6 +273,98 @@ export function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Google Drive connection */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <HardDrive className="h-4 w-4 text-zinc-400" />
+            <CardTitle>Google Drive</CardTitle>
+          </div>
+          <CardDescription>
+            Content plan videos are uploaded to your own Drive — one connection for all social
+            accounts, with a separate folder per account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {driveNotice && <Alert>{driveNotice}</Alert>}
+          {driveError && <Alert variant="destructive">{driveError}</Alert>}
+
+          {driveLoading ? (
+            <div className="h-16 animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/40 motion-reduce:animate-none" />
+          ) : drive ? (
+            <div className="flex flex-col gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div
+                  aria-hidden="true"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10"
+                >
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-zinc-100">{drive.googleEmail}</p>
+                  <p className="mt-0.5 text-xs text-zinc-500">
+                    Connected{' '}
+                    {new Date(drive.connectedAt).toLocaleDateString(undefined, {
+                      dateStyle: 'medium',
+                    })}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDisconnect(true)}
+                className="shrink-0"
+              >
+                <Unplug className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Disconnect
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-zinc-200">No Google Drive connected</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-zinc-500">
+                  Connect once, then upload videos right from the Content page. Only files created
+                  by this app are accessible (scope{' '}
+                  <code className="text-zinc-400">drive.file</code>
+                  ).
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={connectDrive}
+                loading={connecting}
+                className="shrink-0"
+              >
+                <HardDrive className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Connect Google Drive
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={confirmDisconnect} onOpenChange={setConfirmDisconnect}>
+        <DialogContent>
+          <DialogHeader icon={<Unplug className="h-4 w-4" />} tone="danger">
+            <DialogTitle>Disconnect Google Drive</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            New video uploads and previews will stop working until you reconnect. Your existing
+            files and folders are <strong className="text-zinc-200">not deleted</strong> — they stay
+            in your Google Drive.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDisconnect(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" loading={disconnecting} onClick={disconnectDrive}>
+              Disconnect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

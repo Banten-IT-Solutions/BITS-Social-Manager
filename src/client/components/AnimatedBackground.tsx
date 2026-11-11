@@ -1,10 +1,17 @@
 /**
  * Shared animated backdrop (glow orbs, grid, conic beam, particles, vignette).
  * Purely decorative — hidden from assistive tech and pointer events.
+ *
+ * `variant="fixed"` viewport-locks the backdrop so it stays tidy behind long,
+ * scrollable pages (legal docs). Default "absolute" spans the container and
+ * suits single-screen pages (landing, auth).
  */
-export function AnimatedBackground() {
+export function AnimatedBackground({ variant = 'absolute' }: { variant?: 'absolute' | 'fixed' }) {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
+    <div
+      aria-hidden
+      className={`pointer-events-none ${variant === 'fixed' ? 'fixed' : 'absolute'} inset-0`}
+    >
       {/* Fading grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgb(63_63_70/0.16)_1px,transparent_1px),linear-gradient(to_bottom,rgb(63_63_70/0.16)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_45%,black,transparent)]" />
       {/* Drifting glow orbs */}

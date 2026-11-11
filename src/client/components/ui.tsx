@@ -297,8 +297,10 @@ interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  /** Override the default max-width of the dialog panel (e.g. for video preview). */
+  className?: string;
 }
-export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+export const Dialog = ({ open, onOpenChange, children, className }: DialogProps) => {
   // Close on Escape
   React.useEffect(() => {
     if (!open) return;
@@ -332,7 +334,10 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-10 max-h-full w-full max-w-md overflow-y-auto overscroll-contain motion-safe:animate-rise"
+        className={cn(
+          'relative z-10 max-h-full w-full max-w-md overflow-y-auto overscroll-contain motion-safe:animate-rise',
+          className
+        )}
       >
         {children}
       </div>

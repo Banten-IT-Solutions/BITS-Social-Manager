@@ -22,6 +22,8 @@
 | Feature                   | Description                                                                |
 | ------------------------- | -------------------------------------------------------------------------- |
 | **Project Organization**  | Group social accounts by project with isolated ownership                   |
+| **Content Plan**          | Plan/schedule posts per social account with status tracking and video      |
+| **Google Drive Videos**   | One OAuth connection per user; per-account folders; in-Drive video preview |
 | **Encrypted Credentials** | AES-256-GCM encryption for account passwords, bcrypt for user passwords    |
 | **JWT Authentication**    | Register, login, profile management with signed tokens                     |
 | **Account Reveal Flow**   | Password decrypted only on single-account view (`Cache-Control: no-store`) |
@@ -53,13 +55,14 @@ BITS-Social-Manager/
 │   │   └── deploy.yaml       # manual deploy via workflow_dispatch
 │   └── dependabot.yml        # weekly npm + github-actions updates
 ├── migrations/
-│   └── 0001_init.sql         # D1 schema
+│   ├── 0001_init.sql         # D1 schema
+│   └── 0002_content_plan.sql # posts + drive_connections + account folder id
 ├── scripts/
 │   └── gen-wrangler.mjs      # generates wrangler.jsonc from template
 ├── src/
 │   ├── client/               # React SPA
 │   │   ├── components/       # layout, guards, UI primitives, AnimatedBackground
-│   │   ├── pages/            # landing, login, register, overview, projects, project, profile
+│   │   ├── pages/            # landing, login, register, overview, projects, project, content, profile, legal (terms/privacy)
 │   │   ├── store/            # Zustand auth state
 │   │   ├── lib/              # API client, types, utils
 │   │   ├── App.tsx
@@ -68,13 +71,13 @@ BITS-Social-Manager/
 │   └── worker/               # Cloudflare Worker
 │       ├── db/               # D1 connection and schema
 │       ├── middleware/       # auth, rate limit, validation
-│       ├── routes/           # auth, profile, projects, accounts
-│       ├── utils/            # jwt, crypto
+│       ├── routes/           # auth, profile, projects, accounts, posts, drive
+│       ├── utils/            # jwt, crypto, google drive
 │       ├── openapi.ts        # hand-written OpenAPI 3.1 spec (served at /api/openapi.json)
 │       └── index.ts          # Hono app + /docs + asset routing
 ├── tests/
-│   ├── unit/                 # crypto, jwt, auth
-│   └── e2e/                  # smoke tests
+│   ├── unit/                 # crypto, jwt, auth, drive helpers/upload
+│   └── e2e/                  # smoke + content plan tests
 ├── wrangler.template.jsonc   # template with ${VAR} placeholders
 ├── .env.example              # vars for local development
 ├── .dev.vars.example         # secrets for local development
@@ -120,9 +123,30 @@ cp .dev.vars.example .dev.vars
 #   WORKER_NAME, D1_DATABASE_NAME, D1_DATABASE_ID, APP_URL, APP_DOMAIN
 # Edit .dev.vars — required for `wrangler dev`:
 #   JWT_SECRET (min 32 chars), ENCRYPTION_KEY (64 hex chars)
+#   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET (only needed for Content Plan video uploads)
 
 npm run cf:config
 ```
+
+> `.env` and `.dev.vars` are gitignored. `GOOGLE_CLIENT_*` are optional: without them the app
+> works normally and `POST /api/drive/connect` returns `503` until they are configured.
+
+#### Google Drive OAuth (Content Plan)
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create (or pick) a project.
+2. **APIs & Services → Library → Google Drive API → Enable.**
+3. **APIs & Services → OAuth consent screen:** choose External, add yourself as a test user while
+   the app is in _Testing_ mode. Only the non-sensitive `drive.file` scope is used.
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.**
+5. Add authorized redirect URIs:
+   - Local: `http://localhost:5173/api/integrations/google/callback`
+   - Production: `https://<APP_DOMAIN>/api/integrations/google/callback`
+6. Copy the client ID/secret into `.dev.vars` (local) and the GitHub Variables/Secrets (CI).
+
+Each app user connects once at **Profile → Google Drive**. Videos are uploaded to
+`BITS Social Manager / {platform} — {accountName}` in the user's own Drive, shared as
+_anyone with the link (reader)_ so the in-app preview iframe works. Disconnecting or deleting a
+post never deletes files from Drive.
 
 > `wrangler.jsonc` is generated and gitignored. It is the only config used by `wrangler dev` and `wrangler deploy`.
 
@@ -170,22 +194,24 @@ Pushes to `main` do not auto-deploy.
 
 ##### GitHub Variables
 
-| Variable           | Example                     | Required | Description                              |
-| ------------------ | --------------------------- | -------- | ---------------------------------------- |
-| `WORKER_NAME`      | `bits-social-manager`       | Required | Worker name                              |
-| `D1_DATABASE_NAME` | `bits-social-manager`       | Required | D1 database name                         |
-| `D1_DATABASE_ID`   | `xxxx-xxxx-xxxx`            | Required | D1 database ID from `wrangler d1 create` |
-| `APP_URL`          | `https://social.bits.co.id` | Required | Public URL                               |
-| `APP_DOMAIN`       | `social.bits.co.id`         | Required | Custom domain                            |
+| Variable           | Example                           | Required | Description                                         |
+| ------------------ | --------------------------------- | -------- | --------------------------------------------------- |
+| `WORKER_NAME`      | `bits-social-manager`             | Required | Worker name                                         |
+| `D1_DATABASE_NAME` | `bits-social-manager`             | Required | D1 database name                                    |
+| `D1_DATABASE_ID`   | `xxxx-xxxx-xxxx`                  | Required | D1 database ID from `wrangler d1 create`            |
+| `APP_URL`          | `https://social.bits.co.id`       | Required | Public URL                                          |
+| `APP_DOMAIN`       | `social.bits.co.id`               | Required | Custom domain                                       |
+| `GOOGLE_CLIENT_ID` | `xxxx.apps.googleusercontent.com` | Optional | OAuth client ID (required for Content Plan uploads) |
 
 ##### GitHub Secrets
 
-| Secret                  | Required | Description                                       |
-| ----------------------- | -------- | ------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | Required | Cloudflare API token with Workers Edit permission |
-| `CLOUDFLARE_ACCOUNT_ID` | Required | Cloudflare Account ID                             |
-| `JWT_SECRET`            | Required | Min 32 chars, `openssl rand -base64 48`           |
-| `ENCRYPTION_KEY`        | Required | 64 hex chars (32 bytes), `openssl rand -hex 32`   |
+| Secret                  | Required | Description                                             |
+| ----------------------- | -------- | ------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Required | Cloudflare API token with Workers Edit permission       |
+| `CLOUDFLARE_ACCOUNT_ID` | Required | Cloudflare Account ID                                   |
+| `JWT_SECRET`            | Required | Min 32 chars, `openssl rand -base64 48`                 |
+| `ENCRYPTION_KEY`        | Required | 64 hex chars (32 bytes), `openssl rand -hex 32`         |
+| `GOOGLE_CLIENT_SECRET`  | Optional | OAuth client secret (required for Content Plan uploads) |
 
 > Secrets are synced via `wrangler secret bulk` during deploy. For local development, set them in `.dev.vars`.
 
@@ -251,12 +277,15 @@ npm run format:check  # CI check
 | Route           | Page                                                          | Access    |
 | --------------- | ------------------------------------------------------------- | --------- |
 | `/`             | Landing page (animated) → redirects to `/dashboard` if authed | Public    |
+| `/terms`        | Terms of Service (Landing-style layout)                       | Public    |
+| `/privacy`      | Privacy Policy (Landing-style layout)                         | Public    |
 | `/login`        | Sign in                                                       | Public    |
 | `/register`     | Create account                                                | Public    |
 | `/dashboard`    | Workspace overview (stats, recent projects, platform usage)   | Protected |
 | `/projects`     | Project list + create/edit/delete                             | Protected |
 | `/projects/:id` | Project detail + social accounts                              | Protected |
-| `/profile`      | Profile & password settings                                   | Protected |
+| `/content`      | Content plan: schedule posts, upload videos, preview          | Protected |
+| `/profile`      | Profile, password & Google Drive connection                   | Protected |
 | `/docs`         | Interactive API reference (Scalar)                            | Public    |
 
 ---
@@ -303,6 +332,33 @@ npm run format:check  # CI check
 | `PUT`    | `/api/accounts/{id}`           | Update account              |
 | `DELETE` | `/api/accounts/{id}`           | Delete account              |
 
+### Content Plan (Posts)
+
+| Method   | Endpoint                               | Description                                              |
+| -------- | -------------------------------------- | -------------------------------------------------------- |
+| `GET`    | `/api/posts`                           | List all posts across the user's accounts                |
+| `GET`    | `/api/accounts/{accountId}/posts`      | List posts for one account                               |
+| `POST`   | `/api/accounts/{accountId}/posts`      | Create post (JSON or `multipart/form-data` with `video`) |
+| `GET`    | `/api/accounts/{accountId}/posts/{id}` | Get one post                                             |
+| `PUT`    | `/api/accounts/{accountId}/posts/{id}` | Update, replace video, or move post to another account   |
+| `DELETE` | `/api/accounts/{accountId}/posts/{id}` | Delete post (the Drive video is kept as an archive)      |
+
+> Uploads are streamed to Drive via a resumable session and capped at **50 MB**
+> (`MAX_VIDEO_BYTES`). A scheduled post requires `scheduledAt`. A new video on an existing post
+> replaces the file content in place (same Drive file id/link/permissions).
+
+### Google Drive
+
+| Method   | Endpoint                            | Description                                                              |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| `GET`    | `/api/drive`                        | Connection status for the current user                                   |
+| `POST`   | `/api/drive/connect`                | Create the Google OAuth consent URL (`state` = 10 min JWT)               |
+| `DELETE` | `/api/drive`                        | Revoke + delete the stored connection (files stay)                       |
+| `GET`    | `/api/integrations/google/callback` | Public OAuth callback (creates the root folder, stores encrypted tokens) |
+
+> Scope: `drive.file openid email`. Refresh/access tokens are AES-256-GCM encrypted with
+> `ENCRYPTION_KEY`. Folders are created lazily: `BITS Social Manager / {platform} — {accountName}`.
+
 ### Health
 
 | Method | Endpoint      | Description  |
@@ -318,6 +374,9 @@ npm run format:check  # CI check
 - JWT required for protected routes; ownership checks on all project and account operations
 - `passwordEncrypted` omitted from list endpoints; single-account reveal uses `no-store` caching
 - Rate limiting on authentication endpoints
+- Google OAuth refresh/access tokens are AES-256-GCM encrypted at rest; `state` is a short-lived JWT
+- Uploaded videos are shared `anyone/reader` in the user's own Drive so the preview iframe works —
+  only files created by this app are accessible (`drive.file` scope)
 - Security headers via `hono/secure-headers`
 
 ---

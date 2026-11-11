@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Plus,
   FolderOpen,
@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  CalendarClock,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -609,6 +610,18 @@ export function ProjectPage() {
                     <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0">
                       {account.platform}
                     </Badge>
+                    {!!account.scheduledPosts && (
+                      <Link
+                        to={`/content?accountId=${account.id}`}
+                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-violet-500/25 bg-violet-600/15 px-1.5 py-0 text-[10px] font-medium text-violet-300 transition-colors hover:bg-violet-600/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-400 motion-reduce:transition-none"
+                        title={`${account.scheduledPosts} scheduled post${
+                          account.scheduledPosts === 1 ? '' : 's'
+                        }`}
+                      >
+                        <CalendarClock className="h-2.5 w-2.5" aria-hidden="true" />
+                        {account.scheduledPosts} scheduled
+                      </Link>
+                    )}
                   </div>
                   <p className="text-xs text-zinc-500 truncate mt-0.5">{account.emailHandle}</p>
                   {account.notes && (

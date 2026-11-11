@@ -1,5 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, FolderOpen, User, LogOut, Shield, BookOpen } from 'lucide-react';
+import {
+  CalendarClock,
+  LayoutGrid,
+  FolderOpen,
+  User,
+  LogOut,
+  Shield,
+  BookOpen,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useLogout } from '../hooks/useLogout';
 import { cn } from '../lib/utils';
@@ -20,6 +28,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
   { to: '/projects', icon: FolderOpen, label: 'Projects' },
+  { to: '/content', icon: CalendarClock, label: 'Content' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 

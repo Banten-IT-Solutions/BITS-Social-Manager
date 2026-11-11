@@ -65,3 +65,55 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('Banten IT Solutions')).toBeVisible({ timeout: 5000 });
   });
 });
+
+test.describe('Content plan', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/register');
+    const email = `content${Date.now()}@example.com`;
+    await page.getByLabel('Name').fill('Content User');
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Password').fill('password123');
+    await page.getByRole('button', { name: 'Create account' }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 });
+  });
+
+  test('content page prompts to connect Google Drive', async ({ page }) => {
+    await page.goto('/content');
+    await expect(page.getByRole('heading', { name: 'Content Plan' })).toBeVisible();
+    await expect(page.getByText('Google Drive is not connected')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New post' })).toBeVisible();
+  });
+
+  test('creates a scheduled post for a social account', async ({ page }) => {
+    // Project + account are prerequisites.
+    await page.goto('/projects');
+    await page.getByRole('button', { name: /New project/ }).click();
+    await page.getByLabel('Project name').fill('Content Project');
+    await page.getByRole('button', { name: 'Create project' }).click();
+    await page.getByRole('link', { name: 'Open project Content Project' }).click();
+    await expect(page.getByRole('heading', { name: 'Content Project' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Add account' }).click();
+    await page.getByLabel('Account name').fill('TikTok Utama');
+    await page.getByLabel('Email / Handle').fill('@tiktokutama');
+    await page.getByLabel('Password').fill('secret123');
+    await page.getByRole('dialog').getByRole('button', { name: 'Add account' }).click();
+    await expect(page.getByText('TikTok Utama')).toBeVisible({ timeout: 5000 });
+
+    // Create the post.
+    await page.goto('/content');
+    await page.getByRole('button', { name: 'New post' }).click();
+
+    await page.getByLabel('Title').fill('Video peluncuran produk');
+    await page.getByLabel('Schedule').fill('2026-12-01T10:00');
+    await page.getByRole('dialog').getByRole('button', { name: 'Status' }).click();
+    await page.getByRole('option', { name: 'Scheduled' }).click();
+    await page.getByRole('button', { name: 'Create post' }).click();
+
+    await expect(page.getByText('Video peluncuran produk').first()).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.getByText('Scheduled').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Upcoming' })).toBeVisible();
+  });
+});

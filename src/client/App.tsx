@@ -10,6 +10,8 @@ import { OverviewPage } from './pages/Overview';
 import { ProjectsPage } from './pages/Projects';
 import { ProjectPage } from './pages/Project';
 import { ProfilePage } from './pages/Profile';
+import { ContentPage } from './pages/Content';
+import { TermsPage, PrivacyPage } from './pages/Legal';
 
 /** Landing for guests, straight into the app for signed-in users. */
 function RootRoute() {
@@ -40,6 +42,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RootRoute />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -49,6 +53,7 @@ export default function App() {
             <Route path="/dashboard" element={<OverviewPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectPage />} />
+            <Route path="/content" element={<ContentPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

@@ -6,6 +6,8 @@ import authRoutes from './routes/auth';
 import profileRoutes from './routes/profile';
 import projectsRoutes from './routes/projects';
 import accountsRoutes from './routes/accounts';
+import { driveRouter, googleCallbackRouter } from './routes/drive';
+import postsRoutes from './routes/posts';
 import { openApiSpec } from './openapi';
 
 // Scalar UI via CDN — no npm dependency needed.
@@ -28,6 +30,9 @@ export interface Env {
   ASSETS: Fetcher;
   JWT_SECRET: string;
   ENCRYPTION_KEY: string;
+  /** OAuth Web client credentials from Google Cloud Console. */
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 }
 
 export interface Variables {
@@ -67,6 +72,9 @@ app.route('/api/auth', authRoutes);
 app.route('/api/profile', profileRoutes);
 app.route('/api/projects', projectsRoutes);
 app.route('/api/accounts', accountsRoutes);
+app.route('/api/drive', driveRouter);
+app.route('/api/integrations/google', googleCallbackRouter);
+app.route('/api', postsRoutes);
 
 // Health
 app.get('/api/health', c => c.json({ status: 'ok', ts: Date.now() }));

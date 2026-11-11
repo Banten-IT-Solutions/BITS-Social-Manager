@@ -6,3 +6,6 @@ ENVIRONMENT=development
 # Generate for local dev:
 # JWT_SECRET=your-32-char-min-secret
 # ENCRYPTION_KEY=your-64-hex-char-key
+# Google Drive OAuth (Google Cloud Console → Credentials → OAuth client, type Web)
+# GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+# GOOGLE_CLIENT_SECRET=xxxxx

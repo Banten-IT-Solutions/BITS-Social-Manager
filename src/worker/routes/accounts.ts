@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray, sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
-import { socialAccounts, projects } from '../db/schema';
+import { socialAccounts, projects, posts } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
 import { validationHook } from '../middleware/validate';
 import { encrypt, decrypt, DecryptError } from '../utils/crypto';
@@ -49,6 +49,21 @@ async function ownsProject(db: ReturnType<typeof getDb>, projectId: string, user
     .get();
 }
 
+/** Scheduled-post count per account, so the UI can show badges without N+1 calls. */
+async function scheduledCounts(
+  db: ReturnType<typeof getDb>,
+  accountIds: string[]
+): Promise<Map<string, number>> {
+  if (accountIds.length === 0) return new Map();
+  const rows = await db
+    .select({ accountId: posts.accountId, count: sql<number>`count(*)` })
+    .from(posts)
+    .where(and(inArray(posts.accountId, accountIds), eq(posts.status, 'scheduled')))
+    .groupBy(posts.accountId)
+    .all();
+  return new Map(rows.map(row => [row.accountId, Number(row.count)]));
+}
+
 accountsRouter.get('/', async c => {
   const userId = c.get('userId');
   const projectId = c.req.query('projectId');
@@ -63,8 +78,18 @@ accountsRouter.get('/', async c => {
       .from(socialAccounts)
       .where(eq(socialAccounts.projectId, projectId))
       .all();
+    const counts = await scheduledCounts(
+      db,
+      accounts.map(a => a.id)
+    );
     // Return without decrypted passwords
-    return c.json({ accounts: accounts.map(a => ({ ...a, passwordEncrypted: undefined })) });
+    return c.json({
+      accounts: accounts.map(a => ({
+        ...a,
+        passwordEncrypted: undefined,
+        scheduledPosts: counts.get(a.id) ?? 0,
+      })),
+    });
   }
 
   // All accounts across user's projects
@@ -81,7 +106,17 @@ accountsRouter.get('/', async c => {
     .from(socialAccounts)
     .where(inArray(socialAccounts.projectId, projectIds))
     .all();
-  return c.json({ accounts: all.map(a => ({ ...a, passwordEncrypted: undefined })) });
+  const counts = await scheduledCounts(
+    db,
+    all.map(a => a.id)
+  );
+  return c.json({
+    accounts: all.map(a => ({
+      ...a,
+      passwordEncrypted: undefined,
+      scheduledPosts: counts.get(a.id) ?? 0,
+    })),
+  });
 });
 
 accountsRouter.post('/', zValidator('json', createSchema, validationHook), async c => {

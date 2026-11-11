@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Plus,
@@ -185,12 +185,18 @@ export function ProjectsPage() {
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [deleteProject, setDeleteProject] = useState<Project | null>(null);
   const [accountCounts, setAccountCounts] = useState<Record<string, number>>({});
+  /** Bumped on every local mutation so a slow in-flight fetch can't clobber it. */
+  const mutationSeq = useRef(0);
 
   const fetchProjects = useCallback(async () => {
+    const seq = mutationSeq.current;
     setLoading(true);
     setError(null);
     try {
       const res = await api.projects.list();
+      // A create/edit/delete landed while this request was in flight; the
+      // local state is newer than this snapshot, so keep it.
+      if (mutationSeq.current !== seq) return;
       setProjects(res.projects);
 
       // Fetch account counts for each project
@@ -205,6 +211,7 @@ export function ProjectsPage() {
           }
         })
       );
+      if (mutationSeq.current !== seq) return;
       setAccountCounts(counts);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load projects');
@@ -218,6 +225,7 @@ export function ProjectsPage() {
   }, [fetchProjects]);
 
   const handleSave = (p: Project) => {
+    mutationSeq.current += 1;
     setProjects(prev => {
       const idx = prev.findIndex(x => x.id === p.id);
       if (idx >= 0) {
@@ -230,6 +238,7 @@ export function ProjectsPage() {
   };
 
   const handleDeleted = (id: string) => {
+    mutationSeq.current += 1;
     setProjects(prev => prev.filter(p => p.id !== id));
   };
 

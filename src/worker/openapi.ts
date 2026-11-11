@@ -38,6 +38,27 @@ const errorRes = (description: string) =>
 
 const okRes = (description: string, schema: object) => jsonResponse(description, schema);
 
+const postInputBody = {
+  required: true,
+  content: {
+    'application/json': { schema: { $ref: '#/components/schemas/PostInput' } },
+    'multipart/form-data': {
+      schema: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          description: { type: 'string' },
+          scheduledAt: { type: 'string', format: 'date-time' },
+          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
+          attachmentUrl: { type: 'string', format: 'uri' },
+          accountId: { type: 'string' },
+          video: { type: 'string', format: 'binary', description: 'Max 50 MB' },
+        },
+      },
+    },
+  },
+};
+
 const unauthorized = errorRes('Token tidak valid atau kadaluarsa');
 const notFound = errorRes('Not found');
 const validationError = errorRes('Body tidak valid');
@@ -58,6 +79,8 @@ export const openApiSpec = {
     { name: 'Profile', description: 'Profil user' },
     { name: 'Projects', description: 'Kelola project' },
     { name: 'Accounts', description: 'Kelola akun media sosial' },
+    { name: 'Posts', description: 'Content plan: post per akun sosial + video Google Drive' },
+    { name: 'Drive', description: 'Koneksi Google Drive per user (OAuth, scope drive.file)' },
     { name: 'Health', description: 'Cek status API' },
   ],
   components: {
@@ -124,6 +147,15 @@ export const openApiSpec = {
           accountName: { type: 'string' },
           emailHandle: { type: 'string', description: 'Email atau username akun' },
           notes: { type: 'string', nullable: true },
+          driveFolderId: {
+            type: 'string',
+            nullable: true,
+            description: 'Subfolder Google Drive akun (dibuat lazy saat upload pertama)',
+          },
+          scheduledPosts: {
+            type: 'integer',
+            description: 'Jumlah post berstatus scheduled (list endpoint)',
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -146,6 +178,70 @@ export const openApiSpec = {
             required: ['password'],
           },
         ],
+      },
+      Post: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          userId: { type: 'string' },
+          accountId: { type: 'string' },
+          title: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          scheduledAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'null = belum dijadwalkan',
+          },
+          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
+          driveFileId: { type: 'string', nullable: true },
+          attachmentName: { type: 'string', nullable: true, description: 'Nama file asli' },
+          attachmentUrl: {
+            type: 'string',
+            nullable: true,
+            description: 'Link Drive (webViewLink) atau tautan eksternal',
+          },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          account: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              projectId: { type: 'string' },
+              platform: { type: 'string', enum: [...platforms] },
+              accountName: { type: 'string' },
+              projectName: { type: 'string' },
+            },
+            required: ['id', 'projectId', 'platform', 'accountName'],
+          },
+        },
+        required: ['id', 'userId', 'accountId', 'title', 'status', 'createdAt', 'updatedAt'],
+      },
+      PostInput: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', minLength: 1, maxLength: 200 },
+          description: { type: 'string', maxLength: 5000, nullable: true },
+          scheduledAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Wajib jika status = scheduled',
+          },
+          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
+          attachmentUrl: { type: 'string', format: 'uri', nullable: true },
+          accountId: { type: 'string', description: 'Hanya untuk PUT: pindah post ke akun lain' },
+        },
+        required: ['title'],
+      },
+      DriveConnection: {
+        type: 'object',
+        properties: {
+          googleEmail: { type: 'string', format: 'email' },
+          connectedAt: { type: 'string', format: 'date-time' },
+          rootFolderId: { type: 'string', nullable: true },
+        },
+        required: ['googleEmail', 'connectedAt'],
       },
     },
   },
@@ -440,6 +536,192 @@ export const openApiSpec = {
       delete: {
         tags: ['Accounts'],
         summary: 'Hapus akun',
+        responses: {
+          '200': okRes('Terhapus', { $ref: '#/components/schemas/Success' }),
+          '401': unauthorized,
+          '404': notFound,
+        },
+      },
+    },
+    '/api/drive': {
+      get: {
+        tags: ['Drive'],
+        summary: 'Status koneksi Google Drive user',
+        description: 'Satu koneksi per user aplikasi (bukan per akun sosial).',
+        responses: {
+          '200': okRes('Berhasil', {
+            type: 'object',
+            properties: {
+              connection: {
+                oneOf: [{ $ref: '#/components/schemas/DriveConnection' }, { type: 'null' }],
+              },
+            },
+            required: ['connection'],
+          }),
+          '401': unauthorized,
+        },
+      },
+      delete: {
+        tags: ['Drive'],
+        summary: 'Putuskan koneksi Google Drive (token dicabut, file tetap di Drive user)',
+        responses: {
+          '200': okRes('Terputus', { $ref: '#/components/schemas/Success' }),
+          '401': unauthorized,
+        },
+      },
+    },
+    '/api/drive/connect': {
+      post: {
+        tags: ['Drive'],
+        summary: 'Buat URL consent Google OAuth',
+        description:
+          '`state` = JWT anti-CSRF berumur 10 menit. Redirect URI wajib terdaftar di Google Cloud Console.',
+        responses: {
+          '200': okRes('URL consent', {
+            type: 'object',
+            properties: { url: { type: 'string', format: 'uri' } },
+            required: ['url'],
+          }),
+          '401': unauthorized,
+          '503': errorRes('Kredensial OAuth Google belum dikonfigurasi di server'),
+        },
+      },
+    },
+    '/api/integrations/google/callback': {
+      get: {
+        tags: ['Drive'],
+        summary: 'Callback OAuth Google (publik)',
+        description:
+          'Menukar code dengan token (disimpan terenkripsi), membuat folder root "BITS Social Manager", lalu redirect ke /profile?drive=connected.',
+        security: [],
+        parameters: [
+          { name: 'code', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'state', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'error', in: 'query', required: false, schema: { type: 'string' } },
+        ],
+        responses: {
+          '302': {
+            description: 'Redirect ke /profile?drive=connected atau /profile?drive=error&reason=…',
+          },
+        },
+      },
+    },
+    '/api/posts': {
+      get: {
+        tags: ['Posts'],
+        summary: 'Semua post user (lintas akun, untuk halaman Content)',
+        responses: {
+          '200': okRes('Berhasil', {
+            type: 'object',
+            properties: {
+              posts: { type: 'array', items: { $ref: '#/components/schemas/Post' } },
+            },
+            required: ['posts'],
+          }),
+          '401': unauthorized,
+        },
+      },
+    },
+    '/api/accounts/{accountId}/posts': {
+      parameters: [
+        {
+          name: 'accountId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'ID akun sosial',
+        },
+      ],
+      get: {
+        tags: ['Posts'],
+        summary: 'Daftar post satu akun',
+        responses: {
+          '200': okRes('Berhasil', {
+            type: 'object',
+            properties: {
+              posts: { type: 'array', items: { $ref: '#/components/schemas/Post' } },
+            },
+            required: ['posts'],
+          }),
+          '401': unauthorized,
+          '404': notFound,
+        },
+      },
+      post: {
+        tags: ['Posts'],
+        summary: 'Buat post — JSON atau multipart dengan video',
+        description:
+          'Multipart: field `video` (maks 50 MB) diunggah ke subfolder Drive akun, dibuat lazy saat upload pertama. File di-share `anyone/reader` agar iframe preview dapat diputar. Jika video dikirim, Google Drive wajib terhubung.',
+        requestBody: postInputBody,
+        responses: {
+          '201': okRes('Dibuat', {
+            type: 'object',
+            properties: { post: { $ref: '#/components/schemas/Post' } },
+            required: ['post'],
+          }),
+          '400': validationError,
+          '401': unauthorized,
+          '404': notFound,
+          '409': errorRes('Google Drive belum terhubung / koneksi kedaluwarsa'),
+          '413': errorRes('Video melebihi 50 MB'),
+          '502': errorRes('Operasi Google Drive gagal'),
+        },
+      },
+    },
+    '/api/accounts/{accountId}/posts/{postId}': {
+      parameters: [
+        {
+          name: 'accountId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'ID akun sosial',
+        },
+        {
+          name: 'postId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'ID post',
+        },
+      ],
+      get: {
+        tags: ['Posts'],
+        summary: 'Detail post',
+        responses: {
+          '200': okRes('Berhasil', {
+            type: 'object',
+            properties: { post: { $ref: '#/components/schemas/Post' } },
+            required: ['post'],
+          }),
+          '401': unauthorized,
+          '404': notFound,
+        },
+      },
+      put: {
+        tags: ['Posts'],
+        summary: 'Ubah post — ganti video / pindah akun / ubah metadata',
+        description:
+          'Video baru pada fileId yang sama = replace konten (link & permission tetap); fallback upload baru jika file 404. Mengubah `accountId` memindahkan file antar subfolder Drive. `attachmentName`/`accountId` di body hanya berlaku lewat multipart atau JSON.',
+        requestBody: postInputBody,
+        responses: {
+          '200': okRes('Berhasil', {
+            type: 'object',
+            properties: { post: { $ref: '#/components/schemas/Post' } },
+            required: ['post'],
+          }),
+          '400': validationError,
+          '401': unauthorized,
+          '404': notFound,
+          '409': errorRes('Google Drive belum terhubung / koneksi kedaluwarsa'),
+          '413': errorRes('Video melebihi 50 MB'),
+          '502': errorRes('Operasi Google Drive gagal'),
+        },
+      },
+      delete: {
+        tags: ['Posts'],
+        summary: 'Hapus post (video TIDAK dihapus dari Google Drive)',
+        description: 'File video tetap tersimpan di Drive user sebagai arsip.',
         responses: {
           '200': okRes('Terhapus', { $ref: '#/components/schemas/Success' }),
           '401': unauthorized,

@@ -3,8 +3,8 @@ import {
   Shield,
   Lock,
   FolderKanban,
-  LayoutGrid,
-  Eye,
+  CalendarClock,
+  HardDrive,
   ArrowRight,
   LogIn,
   UserPlus,
@@ -12,12 +12,29 @@ import {
 } from 'lucide-react';
 import { Button, Tooltip } from '../components/ui';
 import { AnimatedBackground } from '../components/AnimatedBackground';
+import { Footer } from '../components/Footer';
 
 const highlights = [
-  { icon: Lock, label: 'AES-256-GCM encryption' },
-  { icon: FolderKanban, label: 'Per-project vaults' },
-  { icon: LayoutGrid, label: '12 platforms' },
-  { icon: Eye, label: 'Reveal on demand' },
+  {
+    icon: Lock,
+    label: 'Encrypted',
+    desc: 'Locked before saving',
+  },
+  {
+    icon: FolderKanban,
+    label: 'By project',
+    desc: 'Kept separate',
+  },
+  {
+    icon: CalendarClock,
+    label: 'Plan posts',
+    desc: 'Write now, post later',
+  },
+  {
+    icon: HardDrive,
+    label: 'Google Drive',
+    desc: 'Attach your files',
+  },
 ];
 
 export function LandingPage() {
@@ -84,7 +101,7 @@ export function LandingPage() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75 motion-safe:animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400" />
             </span>
-            AES-256-GCM encrypted · Built for teams
+            Encrypted & organized · Plan your posts in advance
           </span>
 
           <h1 className="text-balance text-4xl font-semibold leading-[1.06] tracking-tight sm:text-6xl">
@@ -111,8 +128,8 @@ export function LandingPage() {
             className="mx-auto max-w-xl text-balance text-zinc-400 sm:text-lg motion-safe:animate-rise"
             style={{ animationDelay: '0.5s' }}
           >
-            Social media credentials for your whole team — encrypted with AES-256-GCM, organized per
-            project, and revealed only when you need them.
+            Keep every social media password safe in one place, organized by project, and visible
+            only when you need it. Plan your posts and attach files from your own Google Drive.
           </p>
 
           <div
@@ -134,23 +151,30 @@ export function LandingPage() {
             </Button>
           </div>
 
-          {/* Proof points */}
+          {/* Feature cards */}
           <ul
-            className="flex flex-wrap items-center justify-center gap-2 pt-1 motion-safe:animate-rise"
+            className="grid grid-cols-2 gap-2 pt-1 motion-safe:animate-rise sm:grid-cols-4"
             style={{ animationDelay: '0.76s' }}
           >
             {highlights.map(f => (
               <li
                 key={f.label}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3.5 py-1.5 text-sm text-zinc-400 backdrop-blur transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-zinc-600 hover:text-zinc-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3 text-left shadow-lg shadow-violet-600/5 backdrop-blur transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-zinc-600 hover:shadow-violet-600/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
-                <f.icon className="h-3.5 w-3.5 text-violet-400" aria-hidden="true" />
-                {f.label}
+                <div className="shrink-0 rounded-lg border border-zinc-800 bg-zinc-900/80 p-2">
+                  <f.icon className="h-4 w-4 text-violet-400" aria-hidden="true" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium leading-4 text-zinc-100">{f.label}</p>
+                  <p className="mt-0.5 text-[11px] leading-4 text-zinc-500">{f.desc}</p>
+                </div>
               </li>
             ))}
           </ul>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
