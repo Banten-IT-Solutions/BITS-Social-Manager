@@ -157,15 +157,6 @@ export function LandingPage() {
           </ul>
         </div>
       </main>
-
-      {/* ── Bottom bar ── */}
-      <footer
-        className="relative z-10 flex h-14 shrink-0 items-center justify-between px-5 text-sm text-zinc-600 sm:px-8 motion-safe:animate-fade-in"
-        style={{ animationDelay: '0.7s' }}
-      >
-        <span>© {new Date().getFullYear()} Banten IT Solutions. All rights reserved.</span>
-        <span>v1.0.0</span>
-      </footer>
     </div>
   );
 }
