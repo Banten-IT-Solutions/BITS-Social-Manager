@@ -166,20 +166,6 @@ export function LandingPage() {
             </Button>
           </div>
 
-          <p
-            className="text-sm text-zinc-500 motion-safe:animate-rise"
-            style={{ animationDelay: '0.68s' }}
-          >
-            Free forever · No credit card required ·{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="text-zinc-300 underline-offset-4 transition-colors hover:text-zinc-100 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 rounded"
-            >
-              Sign in
-            </button>
-          </p>
-
           {/* Proof points */}
           <ul
             className="flex flex-wrap items-center justify-center gap-2 pt-1 motion-safe:animate-rise"
