@@ -10,8 +10,9 @@ export interface Project {
   userId: string;
   name: string;
   description?: string | null;
-  createdAt: number;
-  updatedAt: number;
+  /** ISO string over the wire, unix seconds in older clients. */
+  createdAt: number | string;
+  updatedAt: number | string;
 }
 
 export interface SocialAccount {

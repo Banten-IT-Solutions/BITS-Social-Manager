@@ -30,6 +30,9 @@ test.describe('Authentication', () => {
     await page.getByRole('button', { name: 'Create account' }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 });
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+
+    await page.goto('/projects');
     await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible();
   });
 
@@ -54,6 +57,7 @@ test.describe('Dashboard', () => {
   });
 
   test('creates a project', async ({ page }) => {
+    await page.goto('/projects');
     await page.getByRole('button', { name: /New project/ }).click();
     await page.getByLabel('Project name').fill('Banten IT Solutions');
     await page.getByLabel('Description').fill('Test project description');

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, User, LogOut, Shield, BookOpen } from 'lucide-react';
+import { LayoutGrid, FolderOpen, User, LogOut, Shield, BookOpen } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useLogout } from '../hooks/useLogout';
 import { cn } from '../lib/utils';
@@ -18,7 +18,8 @@ interface NavItem {
 
 // Desktop sidebar navigation entries.
 const navItems: NavItem[] = [
-  { to: '/dashboard', icon: LayoutGrid, label: 'Projects' },
+  { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
+  { to: '/projects', icon: FolderOpen, label: 'Projects' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 

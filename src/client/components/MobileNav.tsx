@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, User, LogOut } from 'lucide-react';
+import { LayoutGrid, FolderOpen, User, LogOut } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useLogout } from '../hooks/useLogout';
 import { cn } from '../lib/utils';
@@ -10,9 +10,10 @@ interface NavItem {
   to: string;
 }
 
-// Mobile bottom-nav entries ("Home" instead of "Projects" for brevity on small screens).
+// Mobile bottom-nav entries ("Home" instead of "Dashboard" for brevity on small screens).
 const navItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutGrid, label: 'Home' },
+  { to: '/projects', icon: FolderOpen, label: 'Projects' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 

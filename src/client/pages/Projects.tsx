@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { api } from '../lib/api';
 import type { Project } from '../lib/types';
+import { formatDate } from '../lib/utils';
 import {
   Button,
   Input,
@@ -25,14 +26,6 @@ import {
   CardContent,
   Badge,
 } from '../components/ui';
-
-// Helper to format date — locale from the browser, not hardcoded
-const formatDate = (timestamp: number) => {
-  // Timestamp is already in seconds from SQLite unixepoch()
-  const d = new Date(timestamp * 1000);
-  if (isNaN(d.getTime())) return 'Recently';
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d);
-};
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Name required').max(200),
@@ -178,7 +171,7 @@ function DeleteModal({
   );
 }
 
-export function DashboardPage() {
+export function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

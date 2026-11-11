@@ -6,7 +6,8 @@ import { Button } from './components/ui';
 import { LandingPage } from './pages/Landing';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
-import { DashboardPage } from './pages/Dashboard';
+import { OverviewPage } from './pages/Overview';
+import { ProjectsPage } from './pages/Projects';
 import { ProjectPage } from './pages/Project';
 import { ProfilePage } from './pages/Profile';
 
@@ -45,7 +46,8 @@ export default function App() {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<OverviewPage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
