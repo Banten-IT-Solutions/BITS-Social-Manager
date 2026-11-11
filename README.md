@@ -25,6 +25,7 @@
 | **Encrypted Credentials** | AES-256-GCM encryption for account passwords, bcrypt for user passwords    |
 | **JWT Authentication**    | Register, login, profile management with signed tokens                     |
 | **Account Reveal Flow**   | Password decrypted only on single-account view (`Cache-Control: no-store`) |
+| **Interactive API Docs**  | OpenAPI 3.1 spec at `/api/openapi.json`, Scalar UI at `/docs`              |
 | **Rate-Limited Auth**     | Brute-force protection on login and registration                           |
 | **Ownership Enforcement** | All project and account operations scoped to the authenticated user        |
 | **Cloudflare Native**     | Workers, D1, custom domain, and static assets via single Worker            |
@@ -33,12 +34,13 @@
 
 ## 🛠️ Tech Stack
 
-| Layer        | Technology                                                                                                    |
-| ------------ | ------------------------------------------------------------------------------------------------------------- |
-| **Frontend** | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router 7, React Hook Form, Zod 4, Zustand, Lucide React |
-| **Backend**  | Cloudflare Workers, Hono 4, D1 (SQLite), Drizzle ORM, bcryptjs, Web Crypto API                                |
-| **Testing**  | Vitest 4, Playwright 1.62                                                                                     |
-| **Tooling**  | Wrangler 4, ESLint 10, Prettier 3, simple-git-hooks + lint-staged, `scripts/gen-wrangler.mjs`                 |
+| Layer        | Technology                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **Frontend** | React 19, TypeScript 7, Vite 8, Tailwind CSS 4, React Router DOM 7, React Hook Form, Zod 4, Zustand, Lucide React |
+| **Backend**  | Cloudflare Workers, Hono 4, D1 (SQLite), Drizzle ORM, bcryptjs, Web Crypto API                                    |
+| **API Docs** | OpenAPI 3.1 spec + Scalar API Reference served from the Worker (`/docs`)                                          |
+| **Testing**  | Vitest 5, Playwright 1.65                                                                                         |
+| **Tooling**  | Wrangler 4, ESLint 10, Prettier 3, simple-git-hooks + lint-staged, `scripts/gen-wrangler.mjs`                     |
 
 ---
 
@@ -56,8 +58,8 @@ BITS-Social-Manager/
 │   └── gen-wrangler.mjs      # generates wrangler.jsonc from template
 ├── src/
 │   ├── client/               # React SPA
-│   │   ├── components/       # layout, guards, UI primitives
-│   │   ├── pages/            # login, register, dashboard, project, profile
+│   │   ├── components/       # layout, guards, UI primitives, AnimatedBackground
+│   │   ├── pages/            # landing, login, register, overview, projects, project, profile
 │   │   ├── store/            # Zustand auth state
 │   │   ├── lib/              # API client, types, utils
 │   │   ├── App.tsx
@@ -65,10 +67,11 @@ BITS-Social-Manager/
 │   │   └── styles.css
 │   └── worker/               # Cloudflare Worker
 │       ├── db/               # D1 connection and schema
-│       ├── middleware/       # auth, rate limit
+│       ├── middleware/       # auth, rate limit, validation
 │       ├── routes/           # auth, profile, projects, accounts
 │       ├── utils/            # jwt, crypto
-│       └── index.ts          # Hono app + asset routing
+│       ├── openapi.ts        # hand-written OpenAPI 3.1 spec (served at /api/openapi.json)
+│       └── index.ts          # Hono app + /docs + asset routing
 ├── tests/
 │   ├── unit/                 # crypto, jwt, auth
 │   └── e2e/                  # smoke tests
@@ -243,6 +246,21 @@ npm run format:check  # CI check
 
 ---
 
+## 💻 App Routes
+
+| Route           | Page                                                          | Access    |
+| --------------- | ------------------------------------------------------------- | --------- |
+| `/`             | Landing page (animated) → redirects to `/dashboard` if authed | Public    |
+| `/login`        | Sign in                                                       | Public    |
+| `/register`     | Create account                                                | Public    |
+| `/dashboard`    | Workspace overview (stats, recent projects, platform usage)   | Protected |
+| `/projects`     | Project list + create/edit/delete                             | Protected |
+| `/projects/:id` | Project detail + social accounts                              | Protected |
+| `/profile`      | Profile & password settings                                   | Protected |
+| `/docs`         | Interactive API reference (Scalar)                            | Public    |
+
+---
+
 ## 📡 API Overview
 
 > **Interactive documentation:** open [`/docs`](http://social.bits.co.id/docs) on the deployed app
@@ -284,7 +302,12 @@ npm run format:check  # CI check
 | `GET`    | `/api/accounts/{id}`           | Reveal password (decrypted) |
 | `PUT`    | `/api/accounts/{id}`           | Update account              |
 | `DELETE` | `/api/accounts/{id}`           | Delete account              |
-| `GET`    | `/api/health`                  | Health check                |
+
+### Health
+
+| Method | Endpoint      | Description  |
+| ------ | ------------- | ------------ |
+| `GET`  | `/api/health` | Health check |
 
 ---
 
