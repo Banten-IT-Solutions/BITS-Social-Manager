@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { cloneElement, isValidElement, useId } from 'react';
 import { cn } from '../lib/utils';
 
 // Button
@@ -308,16 +309,31 @@ interface FormFieldProps {
   children: React.ReactNode;
   required?: boolean;
 }
-export const FormField = ({ label, error, children, required }: FormFieldProps) => (
-  <div className="space-y-1.5">
-    <Label>
-      {label}
-      {required && <span className="text-red-500 ml-1">*</span>}
-    </Label>
-    {children}
-    {error && <p className="text-xs text-red-400">{error}</p>}
-  </div>
-);
+export const FormField = ({ label, error, children, required }: FormFieldProps) => {
+  const id = useId();
+  const errorId = `${id}-error`;
+  const control = isValidElement(children)
+    ? cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+        id,
+        'aria-invalid': error ? true : undefined,
+        'aria-describedby': error ? errorId : undefined,
+      })
+    : children;
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      {control}
+      {error && (
+        <p id={errorId} className="text-xs text-red-400">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
 
 // Alert
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {

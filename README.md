@@ -245,6 +245,10 @@ npm run format:check  # CI check
 
 ## 📡 API Overview
 
+> **Interactive documentation:** open [`/docs`](http://social.bits.co.id/docs) on the deployed app
+> (or `http://localhost:5173/docs` in local dev) for the full OpenAPI 3.1 reference with a
+> built-in request runner. Raw spec: [`/api/openapi.json`](http://social.bits.co.id/api/openapi.json).
+
 ### Auth
 
 | Method | Endpoint             | Description   |

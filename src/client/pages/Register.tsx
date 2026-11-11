@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import { useState } from 'react';
 import { api } from '../lib/api';
@@ -17,8 +17,11 @@ type FormData = z.infer<typeof schema>;
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
 
   const {
     register,
@@ -33,7 +36,7 @@ export function RegisterPage() {
     try {
       const res = await api.auth.register(data);
       setAuth(res.token, res.user);
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
     }

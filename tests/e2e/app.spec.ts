@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
-  test('redirects to login when not authenticated', async ({ page }) => {
+  test('landing page for guests, login for protected routes', async ({ page }) => {
     await page.goto('/');
+    await expect(page.getByRole('heading', { name: /One secure vault/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('register page loads', async ({ page }) => {
     await page.goto('/register');
-    await expect(page.getByText('Create account')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Create account' })).toBeVisible();
   });
 
   test('login page loads', async ({ page }) => {
@@ -26,7 +30,7 @@ test.describe('Authentication', () => {
     await page.getByRole('button', { name: 'Create account' }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 });
-    await expect(page.getByText('Projects')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible();
   });
 
   test('shows error on invalid login', async ({ page }) => {

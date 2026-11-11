@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, User, LogOut, Shield } from 'lucide-react';
+import { LayoutGrid, User, LogOut, Shield, BookOpen } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useLogout } from '../hooks/useLogout';
 import { cn } from '../lib/utils';
@@ -10,7 +10,10 @@ interface NavItem {
   icon: LucideIcon;
   /** Route path — when present the item renders as a link, otherwise as an action button. */
   to?: string;
+  /** External URL — renders a plain anchor opening in a new tab. */
+  href?: string;
   onSelect?: () => void;
+  destructive?: boolean;
 }
 
 // Desktop sidebar navigation entries.
@@ -43,6 +46,20 @@ function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
       extraClassName
     );
     const children = <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />;
+    if (item.href) {
+      return (
+        <a
+          key={item.label}
+          href={item.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={item.label}
+          className={className}
+        >
+          {children}
+        </a>
+      );
+    }
     if (item.to) {
       return (
         <Link
@@ -86,10 +103,10 @@ function SidebarContent({ items, footerItems, pathname }: SidebarContentProps) {
       </nav>
 
       {/* Footer actions */}
-      <div className="border-t border-zinc-800 p-3 flex flex-col items-center">
+      <div className="border-t border-zinc-800 p-3 flex flex-col items-center gap-2">
         {footerItems.map(item => (
           <Tooltip key={item.label} content={item.label} side="right">
-            {renderControl(item, 'hover:text-red-400')}
+            {renderControl(item, item.destructive ? 'hover:text-red-400' : undefined)}
           </Tooltip>
         ))}
       </div>
@@ -102,7 +119,10 @@ export function Sidebar() {
   const handleLogout = useLogout();
 
   // Footer actions (single definition).
-  const footerItems: NavItem[] = [{ label: 'Sign out', icon: LogOut, onSelect: handleLogout }];
+  const footerItems: NavItem[] = [
+    { label: 'API Docs', icon: BookOpen, href: '/docs' },
+    { label: 'Sign out', icon: LogOut, onSelect: handleLogout, destructive: true },
+  ];
 
   // Desktop sidebar - Ultra compact
   return (
