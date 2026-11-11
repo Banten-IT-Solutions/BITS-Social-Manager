@@ -177,50 +177,39 @@ function AccountModal({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && <Alert variant="destructive">{error}</Alert>}
-          <FormField label="Platform" error={errors.platform?.message} required>
-            <CustomSelect
-              value={selectedPlatform}
-              onChange={value =>
-                setValue('platform', value as AccountForm['platform'], { shouldValidate: true })
-              }
-              options={PLATFORMS.map(p => ({ value: p, label: p }))}
-              className="min-h-[44px]"
-            />
-          </FormField>
-          <FormField label="Account name" error={errors.accountName?.message} required>
-            <Input
-              placeholder="e.g. My Business Account"
-              {...register('accountName')}
-              className="min-h-[44px]"
-            />
-          </FormField>
-          <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
-            <Input
-              placeholder="user@example.com or @handle"
-              {...register('emailHandle')}
-              className="min-h-[44px]"
-            />
-          </FormField>
-          <FormField
-            label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
-            error={errors.password?.message}
-            required={!isEdit}
-          >
-            <Input
-              type="password"
-              placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'}
-              {...register('password')}
-              className="min-h-[44px]"
-            />
-          </FormField>
-          <FormField label="Notes" error={errors.notes?.message}>
-            <Textarea
-              placeholder="Optional notes…"
-              rows={2}
-              {...register('notes')}
-              className="min-h-[44px] py-3"
-            />
-          </FormField>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Platform" error={errors.platform?.message} required>
+              <CustomSelect
+                value={selectedPlatform}
+                onChange={value =>
+                  setValue('platform', value as AccountForm['platform'], { shouldValidate: true })
+                }
+                options={PLATFORMS.map(p => ({ value: p, label: p }))}
+              />
+            </FormField>
+            <FormField label="Account name" error={errors.accountName?.message} required>
+              <Input placeholder="e.g. My Business Account" {...register('accountName')} />
+            </FormField>
+            <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
+              <Input placeholder="user@example.com or @handle" {...register('emailHandle')} />
+            </FormField>
+            <FormField
+              label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
+              error={errors.password?.message}
+              required={!isEdit}
+            >
+              <Input
+                type="password"
+                placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'}
+                {...register('password')}
+              />
+            </FormField>
+            <div className="sm:col-span-2">
+              <FormField label="Notes" error={errors.notes?.message}>
+                <Textarea placeholder="Optional notes…" rows={2} {...register('notes')} />
+              </FormField>
+            </div>
+          </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
