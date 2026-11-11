@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Plus,
-  ArrowLeft,
+  FolderOpen,
+  KeyRound,
+  TriangleAlert,
   Pencil,
   Trash2,
   Eye,
@@ -169,52 +171,48 @@ function AccountModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={<KeyRound className="h-4 w-4" />}>
           <DialogTitle>{isEdit ? 'Edit account' : 'Add social account'}</DialogTitle>
-          <DialogDescription>
-            {isEdit ? 'Update account details.' : 'Add a new social media account to this project.'}
-          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <DialogDescription className="mb-2.5">
+          {isEdit ? 'Update account details.' : 'Add a new social media account to this project.'}
+        </DialogDescription>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           {error && <Alert variant="destructive">{error}</Alert>}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Platform" error={errors.platform?.message} required>
-              <CustomSelect
-                value={selectedPlatform}
-                onChange={value =>
-                  setValue('platform', value as AccountForm['platform'], { shouldValidate: true })
-                }
-                options={PLATFORMS.map(p => ({ value: p, label: p }))}
-              />
-            </FormField>
-            <FormField label="Account name" error={errors.accountName?.message} required>
-              <Input placeholder="e.g. Business account" {...register('accountName')} />
-            </FormField>
-            <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
-              <Input placeholder="email or @handle" {...register('emailHandle')} />
-            </FormField>
-            <FormField
-              label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
-              error={errors.password?.message}
-              required={!isEdit}
-            >
-              <Input
-                type="password"
-                placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'}
-                {...register('password')}
-              />
-            </FormField>
-            <div className="sm:col-span-2">
-              <FormField label="Notes" error={errors.notes?.message}>
-                <Textarea placeholder="Optional notes…" rows={2} {...register('notes')} />
-              </FormField>
-            </div>
-          </div>
+          <FormField label="Platform" error={errors.platform?.message} required>
+            <CustomSelect
+              value={selectedPlatform}
+              onChange={value =>
+                setValue('platform', value as AccountForm['platform'], { shouldValidate: true })
+              }
+              options={PLATFORMS.map(p => ({ value: p, label: p }))}
+            />
+          </FormField>
+          <FormField label="Account name" error={errors.accountName?.message} required>
+            <Input placeholder="e.g. Business account" {...register('accountName')} />
+          </FormField>
+          <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
+            <Input placeholder="email or @handle" {...register('emailHandle')} />
+          </FormField>
+          <FormField
+            label={isEdit ? 'Password (leave blank to keep)' : 'Password'}
+            error={errors.password?.message}
+            required={!isEdit}
+          >
+            <Input
+              type="password"
+              placeholder={isEdit ? 'Leave blank to keep current' : '••••••••'}
+              {...register('password')}
+            />
+          </FormField>
+          <FormField label="Notes" error={errors.notes?.message}>
+            <Textarea placeholder="Optional notes…" rows={2} {...register('notes')} />
+          </FormField>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={isSubmitting}>
+            <Button type="submit" variant="primary" loading={isSubmitting}>
               {isEdit ? 'Save changes' : 'Add account'}
             </Button>
           </DialogFooter>
@@ -363,13 +361,13 @@ function DeleteAccountModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={<TriangleAlert className="h-4 w-4" />} tone="danger">
           <DialogTitle>Delete account</DialogTitle>
-          <DialogDescription>
-            Delete <strong className="text-zinc-200">{account?.accountName}</strong> (
-            {account?.platform})?
-          </DialogDescription>
         </DialogHeader>
+        <DialogDescription>
+          Delete <strong className="text-zinc-200">{account?.accountName}</strong> (
+          {account?.platform})?
+        </DialogDescription>
         {error && <Alert variant="destructive">{error}</Alert>}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -482,14 +480,12 @@ export function ProjectPage() {
 
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <Link
-              to="/dashboard"
-              aria-label="Back to projects"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 motion-reduce:transition-none"
+            <div
+              aria-hidden="true"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-violet-500/20 bg-gradient-to-br from-violet-500/20 to-violet-600/10"
             >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            </Link>
-
+              <FolderOpen className="h-5 w-5 text-violet-400" />
+            </div>
             {loading ? (
               <div className="min-w-0 flex-1 space-y-2" aria-hidden="true">
                 <div className="h-6 w-40 animate-pulse rounded-md bg-zinc-800 motion-reduce:animate-none" />

@@ -142,7 +142,7 @@ export function ProfilePage() {
               <FormField label="Email" error={profileForm.formState.errors.email?.message} required>
                 <Input type="email" {...profileForm.register('email')} className="min-h-[44px]" />
               </FormField>
-              <Button type="submit" loading={profileForm.formState.isSubmitting}>
+              <Button type="submit" variant="primary" loading={profileForm.formState.isSubmitting}>
                 <Save className="h-4 w-4 mr-1.5" />
                 Save changes
               </Button>
@@ -199,7 +199,7 @@ export function ProfilePage() {
                   className="min-h-[44px]"
                 />
               </FormField>
-              <Button type="submit" loading={passwordForm.formState.isSubmitting}>
+              <Button type="submit" variant="primary" loading={passwordForm.formState.isSubmitting}>
                 <Lock className="h-4 w-4 mr-1.5" />
                 Update password
               </Button>

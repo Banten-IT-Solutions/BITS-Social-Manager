@@ -19,9 +19,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50';
     const variants = {
       default: 'bg-zinc-100 text-zinc-900 shadow hover:bg-zinc-200',
-      primary: 'bg-violet-600 text-white shadow hover:bg-violet-700 focus-visible:ring-violet-400',
-      destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
-      outline: 'border border-zinc-700 bg-transparent text-zinc-100 shadow-sm hover:bg-zinc-800',
+      primary:
+        'bg-violet-600 text-white shadow-lg shadow-violet-600/25 hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:ring-violet-400',
+      destructive:
+        'bg-red-600 text-white shadow-lg shadow-red-600/25 hover:bg-red-500 hover:shadow-red-500/30',
+      outline: 'bg-zinc-800 text-zinc-100 shadow-sm hover:bg-zinc-700',
       ghost: 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100',
       link: 'text-zinc-100 underline-offset-4 hover:underline',
     };
@@ -65,7 +67,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     <input
       ref={ref}
       className={cn(
-        'flex h-9 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1 text-sm text-zinc-100 shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-10 w-full rounded-lg border border-zinc-700/80 bg-zinc-900/80 px-3.5 text-sm text-zinc-100 shadow-sm shadow-black/20 placeholder:text-zinc-600',
+        'transition-[border-color,box-shadow] hover:border-zinc-600 motion-reduce:transition-none',
+        'focus-visible:outline-none focus-visible:border-violet-500/60 focus-visible:ring-2 focus-visible:ring-violet-500/20',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -81,7 +86,10 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[80px] w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex w-full rounded-lg border border-zinc-700/80 bg-zinc-900/80 px-3.5 py-2.5 text-sm text-zinc-100 shadow-sm shadow-black/20 placeholder:text-zinc-600',
+        'transition-[border-color,box-shadow] hover:border-zinc-600 motion-reduce:transition-none',
+        'focus-visible:outline-none focus-visible:border-violet-500/60 focus-visible:ring-2 focus-visible:ring-violet-500/20',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -110,8 +118,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     <select
       ref={ref}
       className={cn(
-        'flex h-9 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1 text-sm text-zinc-100 shadow-sm',
-        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400',
+        'flex h-10 w-full rounded-lg border border-zinc-700/80 bg-zinc-900/80 px-3.5 text-sm text-zinc-100 shadow-sm shadow-black/20',
+        'transition-[border-color,box-shadow] hover:border-zinc-600 motion-reduce:transition-none',
+        'focus-visible:outline-none focus-visible:border-violet-500/60 focus-visible:ring-2 focus-visible:ring-violet-500/20',
         'disabled:cursor-not-allowed disabled:opacity-50',
         '[&>option]:bg-zinc-900 [&>option]:text-zinc-100',
         className
@@ -174,10 +183,10 @@ export const CustomSelect = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          'flex h-9 w-full items-center justify-between rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1 text-sm shadow-sm',
-          'hover:bg-zinc-800 transition-colors motion-reduce:transition-none',
-          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400',
-          open ? 'ring-1 ring-zinc-400' : ''
+          'flex h-10 w-full items-center justify-between rounded-lg border border-zinc-700/80 bg-zinc-900/80 px-3.5 text-sm shadow-sm shadow-black/20',
+          'transition-[border-color,box-shadow] hover:border-zinc-600 motion-reduce:transition-none',
+          'focus-visible:outline-none focus-visible:border-violet-500/60 focus-visible:ring-2 focus-visible:ring-violet-500/20',
+          open ? 'border-violet-500/60 ring-2 ring-violet-500/20' : ''
         )}
       >
         <span className={selectedOption ? 'text-zinc-100' : 'text-zinc-500'}>
@@ -197,7 +206,7 @@ export const CustomSelect = ({
       {open && (
         <div
           role="listbox"
-          className="absolute z-50 mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 shadow-lg animate-fade-in"
+          className="absolute z-50 mt-1.5 w-full rounded-lg border border-zinc-700/80 bg-zinc-900 shadow-2xl shadow-black/50 animate-fade-in"
         >
           <div className="max-h-60 overflow-auto p-1">
             {options.map(option => (
@@ -211,10 +220,10 @@ export const CustomSelect = ({
                   setOpen(false);
                 }}
                 className={cn(
-                  'w-full text-left px-3 py-2 text-sm rounded transition-colors',
+                  'w-full text-left px-3 py-2 text-sm rounded-md transition-colors',
                   value === option.value
                     ? 'bg-violet-600 text-white'
-                    : 'text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100'
+                    : 'text-zinc-300 hover:bg-zinc-800/80 hover:text-zinc-100'
                 )}
               >
                 {option.label}
@@ -335,26 +344,74 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
 export const DialogContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'rounded-xl border border-zinc-800 bg-zinc-900/95 p-6 shadow-2xl shadow-black/50 ring-1 ring-white/5 backdrop-blur-xl',
+      'overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-black/60 ring-1 ring-white/10 backdrop-blur-xl p-6',
       className
     )}
     {...props}
   />
 );
-export const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('mb-4 flex flex-col space-y-1', className)} {...props} />
+interface DialogHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Optional leading icon, rendered in a tinted tile (tone picks the color). */
+  icon?: React.ReactNode;
+  tone?: 'violet' | 'danger';
+}
+const headerTiles = {
+  violet: 'border-violet-500/20 bg-violet-600/15 text-violet-400',
+  danger: 'border-red-500/20 bg-red-600/15 text-red-400',
+};
+const headerWash = {
+  violet: 'from-violet-600/10',
+  danger: 'from-red-600/10',
+};
+export const DialogHeader = ({
+  icon,
+  tone = 'violet',
+  className,
+  children,
+  ...props
+}: DialogHeaderProps) => (
+  <div
+    className={cn(
+      '-mx-6 -mt-6 mb-4 flex items-center gap-3 border-b border-zinc-800/80 bg-gradient-to-b to-transparent px-6 pb-3 pt-3.5',
+      headerWash[tone],
+      className
+    )}
+    {...props}
+  >
+    {icon && (
+      <div
+        aria-hidden="true"
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border',
+          headerTiles[tone]
+        )}
+      >
+        {icon}
+      </div>
+    )}
+    <div className="min-w-0 space-y-1">{children}</div>
+  </div>
 );
 export const DialogTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h2 className={cn('text-lg font-semibold text-zinc-100', className)} {...props} />
+  <h2
+    className={cn('text-base font-semibold tracking-tight text-zinc-100', className)}
+    {...props}
+  />
 );
 export const DialogDescription = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn('text-sm text-zinc-500', className)} {...props} />
+  <p className={cn('text-sm leading-relaxed text-zinc-500', className)} {...props} />
 );
 export const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('mt-6 flex justify-end gap-2', className)} {...props} />
+  <div
+    className={cn(
+      '-mx-6 -mb-6 mt-5 flex items-center justify-end gap-2.5 border-t border-zinc-800/80 bg-zinc-900/40 px-6 py-3.5',
+      className
+    )}
+    {...props}
+  />
 );
 
 // FormField helper
@@ -372,13 +429,18 @@ export const FormField = ({ label, error, children, required }: FormFieldProps) 
         id,
         'aria-invalid': error ? true : undefined,
         'aria-describedby': error ? errorId : undefined,
+        'aria-required': required || undefined,
       })
     : children;
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-[13px] font-medium text-zinc-400">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && (
+          <span className="text-violet-400/80 ml-1" aria-hidden="true">
+            *
+          </span>
+        )}
       </Label>
       {control}
       {error && (

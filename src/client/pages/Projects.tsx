@@ -1,6 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, FolderOpen, Pencil, Trash2, ChevronRight, Calendar, LayoutGrid } from 'lucide-react';
+import {
+  Plus,
+  FolderOpen,
+  Pencil,
+  Trash2,
+  ChevronRight,
+  Calendar,
+  LayoutGrid,
+  TriangleAlert,
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -90,12 +99,12 @@ function ProjectModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={<FolderOpen className="h-4 w-4" />}>
           <DialogTitle>{project ? 'Edit project' : 'New project'}</DialogTitle>
-          <DialogDescription>
-            {project ? 'Update project details.' : 'Create a container for your social accounts.'}
-          </DialogDescription>
         </DialogHeader>
+        <DialogDescription className="mb-3">
+          {project ? 'Update project details.' : 'Create a container for your social accounts.'}
+        </DialogDescription>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && <Alert variant="destructive">{error}</Alert>}
           <FormField label="Project name" error={errors.name?.message} required>
@@ -108,7 +117,7 @@ function ProjectModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={isSubmitting}>
+            <Button type="submit" variant="primary" loading={isSubmitting}>
               {project ? 'Save changes' : 'Create project'}
             </Button>
           </DialogFooter>
@@ -150,13 +159,13 @@ function DeleteModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader icon={<TriangleAlert className="h-4 w-4" />} tone="danger">
           <DialogTitle>Delete project</DialogTitle>
-          <DialogDescription>
-            This will permanently delete <strong className="text-zinc-200">{project?.name}</strong>{' '}
-            and all its social accounts.
-          </DialogDescription>
         </DialogHeader>
+        <DialogDescription>
+          This will permanently delete <strong className="text-zinc-200">{project?.name}</strong>{' '}
+          and all its social accounts.
+        </DialogDescription>
         {error && <Alert variant="destructive">{error}</Alert>}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
