@@ -5,6 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { getDb } from '../db';
 import { projects } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
+import { validationHook } from '../middleware/validate';
 import type { Env, Variables } from '../index';
 
 const projectsRouter = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -24,7 +25,7 @@ projectsRouter.get('/', async c => {
   return c.json({ projects: list });
 });
 
-projectsRouter.post('/', zValidator('json', createSchema), async c => {
+projectsRouter.post('/', zValidator('json', createSchema, validationHook), async c => {
   const userId = c.get('userId');
   const { name, description } = c.req.valid('json');
   const db = getDb(c.env.DB);
@@ -47,7 +48,7 @@ projectsRouter.get('/:id', async c => {
   return c.json({ project });
 });
 
-projectsRouter.put('/:id', zValidator('json', updateSchema), async c => {
+projectsRouter.put('/:id', zValidator('json', updateSchema, validationHook), async c => {
   const userId = c.get('userId');
   const { id } = c.req.param();
   const data = c.req.valid('json');

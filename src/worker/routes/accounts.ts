@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { socialAccounts, projects } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
+import { validationHook } from '../middleware/validate';
 import { encrypt, decrypt, DecryptError } from '../utils/crypto';
 import type { Env, Variables } from '../index';
 
@@ -83,7 +84,7 @@ accountsRouter.get('/', async c => {
   return c.json({ accounts: all.map(a => ({ ...a, passwordEncrypted: undefined })) });
 });
 
-accountsRouter.post('/', zValidator('json', createSchema), async c => {
+accountsRouter.post('/', zValidator('json', createSchema, validationHook), async c => {
   const userId = c.get('userId');
   const { projectId, platform, accountName, emailHandle, password, notes } = c.req.valid('json');
   const db = getDb(c.env.DB);
@@ -139,7 +140,7 @@ accountsRouter.get('/:id', async c => {
   return c.json({ account: { ...account, password, passwordEncrypted: undefined } });
 });
 
-accountsRouter.put('/:id', zValidator('json', updateSchema), async c => {
+accountsRouter.put('/:id', zValidator('json', updateSchema, validationHook), async c => {
   const userId = c.get('userId');
   const { id } = c.req.param();
   const data = c.req.valid('json');

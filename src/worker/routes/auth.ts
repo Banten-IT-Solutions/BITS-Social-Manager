@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { users } from '../db/schema';
 import { signJWT } from '../utils/jwt';
+import { validationHook } from '../middleware/validate';
 import { rateLimit } from '../middleware/rateLimit';
 import type { Env } from '../index';
 
@@ -25,26 +26,31 @@ const loginSchema = z.object({
 // 10 attempts per 15 minutes
 const limiter = rateLimit(10, 15 * 60 * 1000);
 
-auth.post('/register', limiter as any, zValidator('json', registerSchema), async c => {
-  const { name, email, password } = c.req.valid('json');
-  const db = getDb(c.env.DB);
+auth.post(
+  '/register',
+  limiter as any,
+  zValidator('json', registerSchema, validationHook),
+  async c => {
+    const { name, email, password } = c.req.valid('json');
+    const db = getDb(c.env.DB);
 
-  const existing = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.email, email))
-    .get();
-  if (existing) return c.json({ error: 'Email already registered' }, 409);
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .get();
+    if (existing) return c.json({ error: 'Email already registered' }, 409);
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const id = crypto.randomUUID().replace(/-/g, '');
-  await db.insert(users).values({ id, name, email, passwordHash }).run();
+    const passwordHash = await bcrypt.hash(password, 10);
+    const id = crypto.randomUUID().replace(/-/g, '');
+    await db.insert(users).values({ id, name, email, passwordHash }).run();
 
-  const token = await signJWT({ sub: id, email, name }, c.env.JWT_SECRET);
-  return c.json({ token, user: { id, name, email } }, 201);
-});
+    const token = await signJWT({ sub: id, email, name }, c.env.JWT_SECRET);
+    return c.json({ token, user: { id, name, email } }, 201);
+  }
+);
 
-auth.post('/login', limiter as any, zValidator('json', loginSchema), async c => {
+auth.post('/login', limiter as any, zValidator('json', loginSchema, validationHook), async c => {
   const { email, password } = c.req.valid('json');
   const db = getDb(c.env.DB);
 

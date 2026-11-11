@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { users } from '../db/schema';
 import { authMiddleware } from '../middleware/auth';
+import { validationHook } from '../middleware/validate';
 import type { Env, Variables } from '../index';
 
 const profile = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -35,7 +36,7 @@ profile.get('/', async c => {
   return c.json({ user });
 });
 
-profile.put('/', zValidator('json', updateSchema), async c => {
+profile.put('/', zValidator('json', updateSchema, validationHook), async c => {
   const userId = c.get('userId');
   const data = c.req.valid('json');
   const db = getDb(c.env.DB);
