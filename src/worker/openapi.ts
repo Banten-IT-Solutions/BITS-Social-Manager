@@ -38,30 +38,50 @@ const errorRes = (description: string) =>
 
 const okRes = (description: string, schema: object) => jsonResponse(description, schema);
 
-const postInputBody = {
+const postStatusProperty = {
+  type: 'string',
+  enum: ['draft', 'scheduled', 'published', 'cancelled'],
+  default: 'draft',
+};
+
+const postCreateMultipart = {
+  type: 'object',
+  required: ['title'],
+  properties: {
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    description: { type: 'string' },
+    scheduledAt: { type: 'string', format: 'date-time' },
+    status: postStatusProperty,
+    attachmentUrl: { type: 'string', format: 'uri' },
+    video: { type: 'string', format: 'binary', description: 'Max 50 MB' },
+  },
+};
+
+const postUpdateMultipart = {
+  type: 'object',
+  properties: { ...postCreateMultipart.properties, accountId: { type: 'string' } },
+};
+
+const postCreateBody = {
   required: true,
   content: {
-    'application/json': { schema: { $ref: '#/components/schemas/PostInput' } },
-    'multipart/form-data': {
-      schema: {
-        type: 'object',
-        properties: {
-          title: { type: 'string' },
-          description: { type: 'string' },
-          scheduledAt: { type: 'string', format: 'date-time' },
-          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
-          attachmentUrl: { type: 'string', format: 'uri' },
-          accountId: { type: 'string' },
-          video: { type: 'string', format: 'binary', description: 'Max 50 MB' },
-        },
-      },
-    },
+    'application/json': { schema: { $ref: '#/components/schemas/PostCreateInput' } },
+    'multipart/form-data': { schema: postCreateMultipart },
+  },
+};
+
+const postUpdateBody = {
+  required: true,
+  content: {
+    'application/json': { schema: { $ref: '#/components/schemas/PostUpdateInput' } },
+    'multipart/form-data': { schema: postUpdateMultipart },
   },
 };
 
 const unauthorized = errorRes('Token tidak valid atau kadaluarsa');
 const notFound = errorRes('Not found');
 const validationError = errorRes('Body tidak valid');
+const tooManyRequests = errorRes('Terlalu banyak permintaan (10 / 15 menit per IP)');
 
 export const openApiSpec = {
   openapi: '3.1.0',
@@ -70,7 +90,8 @@ export const openApiSpec = {
     version: '1.0.0',
     description:
       'REST API untuk mengelola project dan akun media sosial. ' +
-      'Semua endpoint kecuali Auth dan Health memerlukan header `Authorization: Bearer <token>`. ' +
+      'Semua endpoint kecuali Auth, callback OAuth Google (`/api/integrations/google/callback`), ' +
+      'dan Health memerlukan header `Authorization: Bearer <token>`. ' +
       'Data selalu di-scope ke user pemilik token.',
   },
   servers: [{ url: '/' }],
@@ -217,7 +238,7 @@ export const openApiSpec = {
         },
         required: ['id', 'userId', 'accountId', 'title', 'status', 'createdAt', 'updatedAt'],
       },
-      PostInput: {
+      PostCreateInput: {
         type: 'object',
         properties: {
           title: { type: 'string', minLength: 1, maxLength: 200 },
@@ -228,11 +249,27 @@ export const openApiSpec = {
             nullable: true,
             description: 'Wajib jika status = scheduled',
           },
-          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
+          status: postStatusProperty,
           attachmentUrl: { type: 'string', format: 'uri', nullable: true },
-          accountId: { type: 'string', description: 'Hanya untuk PUT: pindah post ke akun lain' },
         },
         required: ['title'],
+      },
+      PostUpdateInput: {
+        type: 'object',
+        description: 'Semua field opsional — kirim yang mau diubah.',
+        properties: {
+          title: { type: 'string', minLength: 1, maxLength: 200 },
+          description: { type: 'string', maxLength: 5000, nullable: true },
+          scheduledAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Wajib jika status berubah menjadi scheduled dan belum ada tanggal',
+          },
+          status: { type: 'string', enum: ['draft', 'scheduled', 'published', 'cancelled'] },
+          attachmentUrl: { type: 'string', format: 'uri', nullable: true },
+          accountId: { type: 'string', description: 'Pindah post ke akun sosial lain' },
+        },
       },
       DriveConnection: {
         type: 'object',
@@ -266,6 +303,7 @@ export const openApiSpec = {
           '201': okRes('Berhasil, langsung login', { $ref: '#/components/schemas/AuthResponse' }),
           '400': validationError,
           '409': errorRes('Email sudah terdaftar'),
+          '429': tooManyRequests,
         },
       },
     },
@@ -287,6 +325,7 @@ export const openApiSpec = {
           '200': okRes('Berhasil', { $ref: '#/components/schemas/AuthResponse' }),
           '400': validationError,
           '401': errorRes('Kredensial salah'),
+          '429': tooManyRequests,
         },
       },
     },
@@ -309,6 +348,7 @@ export const openApiSpec = {
             required: ['user'],
           }),
           '401': unauthorized,
+          '404': notFound,
         },
       },
       put: {
@@ -329,8 +369,9 @@ export const openApiSpec = {
             properties: { user: { $ref: '#/components/schemas/User' } },
             required: ['user'],
           }),
-          '400': validationError,
+          '400': errorRes('Body tidak valid / password lama salah'),
           '401': unauthorized,
+          '404': notFound,
           '409': errorRes('Email sudah dipakai user lain'),
         },
       },
@@ -652,7 +693,7 @@ export const openApiSpec = {
         summary: 'Buat post — JSON atau multipart dengan video',
         description:
           'Multipart: field `video` (maks 50 MB) diunggah ke subfolder Drive akun, dibuat lazy saat upload pertama. File di-share `anyone/reader` agar iframe preview dapat diputar. Jika video dikirim, Google Drive wajib terhubung.',
-        requestBody: postInputBody,
+        requestBody: postCreateBody,
         responses: {
           '201': okRes('Dibuat', {
             type: 'object',
@@ -702,8 +743,8 @@ export const openApiSpec = {
         tags: ['Posts'],
         summary: 'Ubah post — ganti video / pindah akun / ubah metadata',
         description:
-          'Video baru pada fileId yang sama = replace konten (link & permission tetap); fallback upload baru jika file 404. Mengubah `accountId` memindahkan file antar subfolder Drive. `attachmentName`/`accountId` di body hanya berlaku lewat multipart atau JSON.',
-        requestBody: postInputBody,
+          'Semua field opsional. Video baru pada fileId yang sama = replace konten (link & permission tetap); fallback upload baru jika file 404. Mengubah `accountId` memindahkan file antar subfolder Drive.',
+        requestBody: postUpdateBody,
         responses: {
           '200': okRes('Berhasil', {
             type: 'object',
