@@ -53,9 +53,13 @@ export function RegisterPage() {
           style={{ animationDelay: '0.05s' }}
         >
           <div className="flex justify-center">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-3 backdrop-blur">
-              <Shield className="h-6 w-6 text-violet-400" />
-            </div>
+            <Link
+              to="/"
+              aria-label="Back to landing page"
+              className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-3 backdrop-blur transition-colors hover:border-zinc-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+            >
+              <Shield className="h-6 w-6 text-violet-400" aria-hidden="true" />
+            </Link>
           </div>
           <h1 className="text-xl font-semibold tracking-tight">Create account</h1>
           <p className="text-sm text-zinc-500">Start managing your social accounts</p>
