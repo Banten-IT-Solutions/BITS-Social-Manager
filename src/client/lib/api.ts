@@ -1,4 +1,5 @@
 import type { Project, SocialAccount, User } from './types';
+import { useAuthStore } from '../store/auth';
 
 const BASE = '/api';
 
@@ -26,6 +27,15 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
+    // Expired/invalid session on a protected endpoint → sign out and return to
+    // login. Auth endpoints are excluded: their 401 means "wrong credentials".
+    if (res.status === 401 && !path.startsWith('/auth/')) {
+      useAuthStore.getState().clearAuth();
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.assign('/login');
+      }
+      throw new Error('Session expired. Please sign in again.');
+    }
     throw new Error((data?.['error'] as string | undefined) ?? `HTTP ${res.status}`);
   }
   return data as T;
