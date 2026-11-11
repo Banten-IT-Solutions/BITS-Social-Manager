@@ -188,10 +188,10 @@ function AccountModal({
               />
             </FormField>
             <FormField label="Account name" error={errors.accountName?.message} required>
-              <Input placeholder="e.g. My Business Account" {...register('accountName')} />
+              <Input placeholder="e.g. Business account" {...register('accountName')} />
             </FormField>
             <FormField label="Email / Handle" error={errors.emailHandle?.message} required>
-              <Input placeholder="user@example.com or @handle" {...register('emailHandle')} />
+              <Input placeholder="email or @handle" {...register('emailHandle')} />
             </FormField>
             <FormField
               label={isEdit ? 'Password (leave blank to keep)' : 'Password'}

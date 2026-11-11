@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cloneElement, isValidElement, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '../lib/utils';
 
 // Button
@@ -299,8 +300,20 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onOpenChange]);
 
+  // Lock background scroll while open.
+  React.useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // Portal to <body>: page containers carry entrance-animation transforms,
+  // which would trap `fixed` inside their (scrollable) box instead of the viewport.
   if (!open) return null;
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-6">
       <div
         aria-hidden="true"
@@ -314,7 +327,8 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
