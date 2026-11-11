@@ -105,6 +105,10 @@ function StatusBadge({ status }: { status: PostStatus }) {
 }
 
 function DriveThumbnail({ post, className }: { post: Post; className?: string }) {
+  const thumbnailUrl = post.driveFileId
+    ? `https://drive.google.com/thumbnail?id=${post.driveFileId}&sz=w480`
+    : null;
+
   return (
     <div
       className={cn(
@@ -113,21 +117,35 @@ function DriveThumbnail({ post, className }: { post: Post; className?: string })
       )}
     >
       <Film className="h-5 w-5 text-zinc-600" aria-hidden="true" />
-      {post.driveFileId && (
+      {thumbnailUrl && (
         <>
+          {/* Blurred cover fills the 16:9 media box, while the sharp frame is
+              contained so 9:16 and 1:1 videos stay uncropped. Card heights stay
+              identical regardless of the source aspect ratio. */}
           <img
-            src={`https://drive.google.com/thumbnail?id=${post.driveFileId}&sz=w480`}
+            src={thumbnailUrl}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-lg"
+            onError={event => {
+              event.currentTarget.style.display = 'none';
+            }}
+          />
+          <img
+            src={thumbnailUrl}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 z-10 h-full w-full object-contain"
             onError={event => {
               event.currentTarget.style.display = 'none';
             }}
           />
           <span
             aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30"
+            className="absolute inset-0 z-20 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30"
           >
             <Play className="h-5 w-5 text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
           </span>
@@ -740,19 +758,23 @@ export function ContentPage() {
                 key={post.id}
                 type="button"
                 onClick={() => (post.driveFileId ? setPreviewPost(post) : openEdit(post))}
-                className="group overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 text-left transition-[border-color,background-color] hover:border-zinc-700 hover:bg-zinc-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40 motion-reduce:transition-none"
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/40 text-left transition-[border-color,background-color] hover:border-zinc-700 hover:bg-zinc-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40 motion-reduce:transition-none"
                 aria-label={post.driveFileId ? `Preview ${post.title}` : `Edit ${post.title}`}
               >
                 <DriveThumbnail
                   post={post}
-                  className="aspect-video w-full rounded-none border-0 border-b"
+                  className="aspect-video w-full shrink-0 rounded-none border-0 border-b"
                 />
-                <div className="space-y-2 p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="line-clamp-2 text-sm font-medium text-zinc-100">{post.title}</p>
-                    <StatusBadge status={post.status as PostStatus} />
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <div className="flex flex-1 flex-col gap-2 p-3">
+                  {/* Reserve two lines so every card keeps the same height; long
+                      titles are clamped and exposed in full via the tooltip. */}
+                  <p
+                    className="line-clamp-2 min-h-10 text-sm font-medium leading-5 text-zinc-100"
+                    title={post.title}
+                  >
+                    {post.title}
+                  </p>
+                  <div className="mt-auto flex items-center gap-2 text-xs text-zinc-500">
                     <span
                       className={cn(
                         'flex h-6 w-6 shrink-0 items-center justify-center rounded',
@@ -767,9 +789,12 @@ export function ContentPage() {
                         )}
                       />
                     </span>
-                    <span className="truncate">{post.account?.accountName}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="shrink-0">{formatDateTime(post.scheduledAt)}</span>
+                    <span className="min-w-0 flex-1 truncate" title={post.account?.accountName}>
+                      {post.account?.accountName}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap">
+                      {formatDateTime(post.scheduledAt)}
+                    </span>
                   </div>
                 </div>
               </button>
