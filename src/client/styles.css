@@ -110,6 +110,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Tailwind v4 preflight sets buttons to cursor:default — restore pointer
+   for all interactive controls (buttons, selects, custom [role=button]). */
+button:not(:disabled),
+select:not(:disabled),
+summary,
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

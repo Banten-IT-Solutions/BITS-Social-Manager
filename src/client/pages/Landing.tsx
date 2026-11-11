@@ -188,7 +188,7 @@ export function LandingPage() {
             {highlights.map(f => (
               <li
                 key={f.label}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3.5 py-1.5 text-sm text-zinc-400 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-600 hover:text-zinc-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3.5 py-1.5 text-sm text-zinc-400 backdrop-blur transition-[border-color,color,transform] duration-200 hover:-translate-y-0.5 hover:border-zinc-600 hover:text-zinc-200 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
                 <f.icon className="h-3.5 w-3.5 text-violet-400" aria-hidden="true" />
                 {f.label}

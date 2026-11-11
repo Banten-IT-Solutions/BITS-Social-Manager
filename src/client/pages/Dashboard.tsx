@@ -26,12 +26,12 @@ import {
   Badge,
 } from '../components/ui';
 
-// Helper to format date
+// Helper to format date — locale from the browser, not hardcoded
 const formatDate = (timestamp: number) => {
   // Timestamp is already in seconds from SQLite unixepoch()
   const d = new Date(timestamp * 1000);
   if (isNaN(d.getTime())) return 'Recently';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d);
 };
 
 const projectSchema = z.object({
@@ -45,7 +45,7 @@ type ProjectForm = z.infer<typeof projectSchema>;
  * glow shadow, 44px touch target, full-width on mobile.
  */
 const HEADER_CTA =
-  'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
+  'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-[background-color,box-shadow,transform] hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
 
 /** Decorative violet tile behind header icons (matches project card icon tiles). */
 const HEADER_ICON_TILE =
@@ -109,7 +109,7 @@ function ProjectModal({
             <Input placeholder="e.g. Banten IT Solutions" {...register('name')} />
           </FormField>
           <FormField label="Description" error={errors.description?.message}>
-            <Textarea placeholder="Optional description..." rows={3} {...register('description')} />
+            <Textarea placeholder="Optional description…" rows={3} {...register('description')} />
           </FormField>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -280,7 +280,7 @@ export function DashboardPage() {
           {[1, 2, 3].map(i => (
             <div
               key={i}
-              className="h-32 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse"
+              className="h-32 rounded-lg border border-zinc-800 bg-zinc-900/30 animate-pulse motion-reduce:animate-none"
             />
           ))}
         </div>
@@ -296,21 +296,27 @@ export function DashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map(project => (
-            <Link
+            <div
               key={project.id}
-              to={`/projects/${project.id}`}
-              className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm transition-all hover:border-zinc-700 hover:bg-zinc-900/80 hover:shadow-lg hover:shadow-violet-500/10"
+              className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm transition-[border-color,background-color,box-shadow] hover:border-zinc-700 hover:bg-zinc-900/80 hover:shadow-lg hover:shadow-violet-500/10"
             >
               {/* Gradient overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              {/* Stretched link — whole card is navigable; keeps actions outside the <a> */}
+              <Link
+                to={`/projects/${project.id}`}
+                aria-label={`Open project ${project.name}`}
+                className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+              />
 
               <div className="relative p-5 space-y-4">
                 {/* Header with icon and actions */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     {/* Folder icon */}
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center group-hover:from-violet-500/30 group-hover:to-violet-600/20 transition-all">
-                      <FolderOpen className="h-5 w-5 text-violet-400" />
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center group-hover:from-violet-500/30 group-hover:to-violet-600/20 transition-[background-image] duration-200">
+                      <FolderOpen className="h-5 w-5 text-violet-400" aria-hidden="true" />
                     </div>
 
                     {/* Title and description */}
@@ -326,33 +332,27 @@ export function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Actions - show on hover */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  {/* Actions - show on hover or keyboard focus */}
+                  <div className="relative z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 hover:bg-zinc-800"
-                      onClick={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setEditProject(project);
-                      }}
+                      onClick={() => setEditProject(project)}
+                      aria-label={`Edit project ${project.name}`}
                       title="Edit"
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 hover:bg-zinc-800 hover:text-red-400"
-                      onClick={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDeleteProject(project);
-                      }}
+                      onClick={() => setDeleteProject(project)}
+                      aria-label={`Delete project ${project.name}`}
                       title="Delete"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -371,16 +371,19 @@ export function DashboardPage() {
 
                     {/* Updated date */}
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3" />
+                      <Calendar className="h-3 w-3" aria-hidden="true" />
                       <span>{formatDate(project.updatedAt)}</span>
                     </div>
                   </div>
 
                   {/* Arrow indicator */}
-                  <ChevronRight className="h-4 w-4 text-zinc-600 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
+                  <ChevronRight
+                    className="h-4 w-4 text-zinc-600 group-hover:text-violet-400 group-hover:translate-x-1 transition-[color,transform] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+                    aria-hidden="true"
+                  />
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

@@ -48,7 +48,7 @@ const ITEMS_PER_PAGE = 10;
  * full-width on mobile.
  */
 const HEADER_CTA =
-  'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
+  'min-h-[44px] w-full shrink-0 rounded-full bg-violet-600 text-white shadow-lg shadow-violet-600/20 transition-[background-color,box-shadow,transform] hover:bg-violet-500 active:scale-95 focus-visible:ring-2 focus-visible:ring-violet-300 motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto';
 
 /**
  * Build a public profile URL from a platform + account name/handle.
@@ -215,7 +215,7 @@ function AccountModal({
           </FormField>
           <FormField label="Notes" error={errors.notes?.message}>
             <Textarea
-              placeholder="Optional notes..."
+              placeholder="Optional notes…"
               rows={2}
               {...register('notes')}
               className="min-h-[44px] py-3"
@@ -294,12 +294,13 @@ function PasswordReveal({ accountId }: { accountId: string }) {
         className={cn('h-8 w-8', error && 'text-red-400 hover:text-red-300')}
         onClick={reveal}
         disabled={loading}
+        aria-label="Show password"
         title={error ?? 'Show password'}
       >
         {loading ? (
           <div className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" />
         ) : (
-          <Eye className="h-4 w-4" />
+          <Eye className="h-4 w-4" aria-hidden="true" />
         )}
       </Button>
     );
@@ -307,20 +308,35 @@ function PasswordReveal({ accountId }: { accountId: string }) {
 
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      <code className="text-xs bg-zinc-800 border border-zinc-700 px-2 py-1 rounded font-mono text-zinc-200 max-w-[140px] truncate select-all">
+      <code
+        className="text-xs bg-zinc-800 border border-zinc-700 px-2 py-1 rounded font-mono text-zinc-200 max-w-[140px] truncate select-all"
+        aria-label="Revealed password"
+      >
         {password ?? ''}
       </code>
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copy} title="Copy password">
-        {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={copy}
+        aria-label="Copy password"
+        title="Copy password"
+      >
+        {copied ? (
+          <Check className="h-4 w-4 text-green-400" aria-hidden="true" />
+        ) : (
+          <Copy className="h-4 w-4" aria-hidden="true" />
+        )}
       </Button>
       <Button
         variant="ghost"
         size="icon"
         className="h-8 w-8 hover:text-red-400"
         onClick={() => setShow(false)}
+        aria-label="Hide password"
         title="Hide password"
       >
-        <EyeOff className="h-4 w-4" />
+        <EyeOff className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -526,9 +542,14 @@ export function ProjectPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500"
+            aria-hidden="true"
+          />
           <Input
-            placeholder="Search accounts..."
+            type="search"
+            placeholder="Search accounts…"
+            aria-label="Search accounts"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -582,7 +603,7 @@ export function ProjectPage() {
             {paginatedAccounts.map((account: SocialAccount) => (
               <div
                 key={account.id}
-                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-900/50 transition-all"
+                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-3 transition-[border-color,background-color] hover:border-zinc-700 hover:bg-zinc-900/50 motion-reduce:transition-none"
               >
                 {/* Platform icon */}
                 <div
@@ -627,10 +648,11 @@ export function ProjectPage() {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`Open ${account.platform} profile`}
                       title={`Open ${account.platform} profile`}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
                     >
-                      <ExternalLink className="h-3.5 w-3.5" />
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                     </a>
                   )}
                   <Button
@@ -638,18 +660,20 @@ export function ProjectPage() {
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => setEditAccount(account)}
+                    aria-label={`Edit account ${account.accountName}`}
                     title="Edit"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 hover:text-red-400"
                     onClick={() => setDeleteAccount(account)}
+                    aria-label={`Delete account ${account.accountName}`}
                     title="Delete"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
@@ -664,18 +688,21 @@ export function ProjectPage() {
                 size="icon"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                aria-label="Previous page"
                 className="h-8 w-8"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </Button>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" role="navigation" aria-label="Account pages">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                   <Button
                     key={page}
                     variant={currentPage === page ? 'default' : 'ghost'}
                     size="icon"
                     onClick={() => setCurrentPage(page)}
+                    aria-label={`Page ${page}`}
+                    aria-current={currentPage === page ? 'page' : undefined}
                     className="h-8 w-8"
                   >
                     {page}
@@ -688,9 +715,10 @@ export function ProjectPage() {
                 size="icon"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                aria-label="Next page"
                 className="h-8 w-8"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           )}

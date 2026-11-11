@@ -130,37 +130,51 @@ interface CustomSelectProps {
   options: { value: string; label: string }[];
   placeholder?: string;
   className?: string;
+  /** Forwarded to the trigger button so <label htmlFor> can point here. */
+  id?: string;
 }
 
 export const CustomSelect = ({
   value,
   onChange,
   options,
-  placeholder = 'Select...',
+  placeholder = 'Select…',
   className,
+  id,
 }: CustomSelectProps) => {
   const [open, setOpen] = React.useState(false);
   const selectedOption = options.find(opt => opt.value === value);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   return (
     <div ref={ref} className={cn('relative', className)}>
       <button
         type="button"
+        id={id}
         onClick={() => setOpen(!open)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         className={cn(
           'flex h-9 w-full items-center justify-between rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1 text-sm shadow-sm',
-          'hover:bg-zinc-800 transition-colors',
+          'hover:bg-zinc-800 transition-colors motion-reduce:transition-none',
           'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400',
           open ? 'ring-1 ring-zinc-400' : ''
         )}
@@ -169,6 +183,7 @@ export const CustomSelect = ({
           {selectedOption?.label ?? placeholder}
         </span>
         <svg
+          aria-hidden="true"
           className={cn('h-4 w-4 text-zinc-500 transition-transform', open ? 'rotate-180' : '')}
           fill="none"
           stroke="currentColor"
@@ -179,12 +194,17 @@ export const CustomSelect = ({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 shadow-lg animate-fade-in">
+        <div
+          role="listbox"
+          className="absolute z-50 mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 shadow-lg animate-fade-in"
+        >
           <div className="max-h-60 overflow-auto p-1">
             {options.map(option => (
               <button
                 key={option.value}
                 type="button"
+                role="option"
+                aria-selected={value === option.value}
                 onClick={() => {
                   onChange(option.value);
                   setOpen(false);
@@ -269,14 +289,31 @@ interface DialogProps {
   children: React.ReactNode;
 }
 export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+  // Close on Escape
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onOpenChange(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onOpenChange]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
+        aria-hidden="true"
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="relative z-10 w-full max-w-md animate-fade-in">{children}</div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-10 w-full max-w-md max-h-dvh overflow-y-auto overscroll-contain animate-fade-in"
+      >
+        {children}
+      </div>
     </div>
   );
 };
@@ -346,7 +383,11 @@ export const Alert = ({ className, variant = 'default', ...props }: AlertProps) 
     destructive: 'border-red-800 bg-red-950/50 text-red-400',
   };
   return (
-    <div className={cn('rounded-md border p-3 text-sm', variants[variant], className)} {...props} />
+    <div
+      role={variant === 'destructive' ? 'alert' : 'status'}
+      className={cn('rounded-md border p-3 text-sm', variants[variant], className)}
+      {...props}
+    />
   );
 };
 
@@ -368,7 +409,7 @@ export const Tooltip = ({ content, children, side = 'top' }: TooltipProps) => {
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100 z-50',
+          'pointer-events-none absolute whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-50',
           positions[side]
         )}
       >
