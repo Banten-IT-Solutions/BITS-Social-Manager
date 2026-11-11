@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import { Button, Input, FormField, Alert } from '../components/ui';
+import { AnimatedBackground } from '../components/AnimatedBackground';
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -43,26 +44,38 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6 animate-fade-in">
-        <div className="text-center space-y-2">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-zinc-950 p-4 text-zinc-100">
+      <AnimatedBackground />
+
+      <div className="relative w-full max-w-sm space-y-6">
+        <div
+          className="space-y-2 text-center motion-safe:animate-rise"
+          style={{ animationDelay: '0.05s' }}
+        >
           <div className="flex justify-center">
-            <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-3">
-              <Shield className="h-6 w-6 text-zinc-400" />
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-3 backdrop-blur">
+              <Shield className="h-6 w-6 text-violet-400" />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-zinc-100">Create account</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Create account</h1>
           <p className="text-sm text-zinc-500">Start managing your social accounts</p>
         </div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-6"
+          className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/70 p-6 shadow-lg shadow-violet-600/5 backdrop-blur motion-safe:animate-rise"
+          style={{ animationDelay: '0.15s' }}
         >
           {error && <Alert variant="destructive">{error}</Alert>}
 
           <FormField label="Name" error={errors.name?.message} required>
-            <Input type="text" placeholder="John Doe" autoComplete="name" {...register('name')} />
+            <Input
+              type="text"
+              placeholder="John Doe"
+              autoComplete="name"
+              spellCheck={false}
+              {...register('name')}
+            />
           </FormField>
 
           <FormField label="Email" error={errors.email?.message} required>
@@ -70,6 +83,7 @@ export function RegisterPage() {
               type="email"
               placeholder="you@example.com"
               autoComplete="email"
+              spellCheck={false}
               {...register('email')}
             />
           </FormField>
@@ -83,16 +97,19 @@ export function RegisterPage() {
             />
           </FormField>
 
-          <Button type="submit" className="w-full" loading={isSubmitting}>
+          <Button type="submit" variant="primary" className="w-full" loading={isSubmitting}>
             Create account
           </Button>
         </form>
 
-        <p className="text-center text-sm text-zinc-500">
+        <p
+          className="text-center text-sm text-zinc-500 motion-safe:animate-rise"
+          style={{ animationDelay: '0.3s' }}
+        >
           Already have an account?{' '}
           <Link
             to="/login"
-            className="text-zinc-300 hover:text-zinc-100 underline underline-offset-4"
+            className="text-zinc-300 underline underline-offset-4 transition-colors hover:text-violet-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 rounded"
           >
             Sign in
           </Link>
